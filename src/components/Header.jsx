@@ -1,9 +1,9 @@
 import React from "react"
-import axios from "axios"
 import { useNavigate, Link } from "react-router-dom"
+import axios from "axios"
 
-const Header = () => {
-  const navigate = useNavigate()
+const Header = ({ isAdmin, username }) => {
+  // const navigate = useNavigate()
 
   const handleLogout = async () => {
     try {
@@ -15,17 +15,20 @@ const Header = () => {
           withCredentials: true
         }
       )
-      console.log("Successfully logged out")
-      navigate("/login")
-    } catch (error) {
-      console.error("Error logging out:", error)
+      // console.log("Successfully logged out")
+      // navigate("/login")
+      window.location.reload()
+    } catch (err) {
+      console.error("Error logging out:", err)
     }
   }
 
   return (
     <header>
-      {/* <p>{`Logged in as: ${username}`}</p> */}
-      <Link to="/profile/">User Profile</Link>
+      <Link to="/tms">Task Management System</Link>
+      {isAdmin && <Link to="/ums">User Management System</Link>}
+      <Link to="/profile">User Profile</Link>
+      <span>Welcome, {username}!</span>
       <button onClick={handleLogout}>Sign Out</button>
     </header>
   )

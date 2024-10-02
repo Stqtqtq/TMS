@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import axios from "axios"
 
-const CreateGrp = () => {
+const CreateGrp = ({ addGroup }) => {
   const [grpName, setGrpName] = useState("")
   const [message, setMessage] = useState("")
 
@@ -15,15 +15,14 @@ const CreateGrp = () => {
           groupname: grpName
         },
         {
-          // headers: { "Content-Type": "application/json" },
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: { "Content-Type": "application/json" },
           withCredentials: true
         }
       )
 
-      // setMessage("Group created successfully")
       setMessage(response.data.message)
       setGrpName("")
+      addGroup(grpName)
     } catch (err) {
       if (!err?.response) {
         setMessage("No Server Response")

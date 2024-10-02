@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react"
-import Header from "./Header"
 import axios from "axios"
 
 const UserProfile = () => {
@@ -12,37 +11,34 @@ const UserProfile = () => {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/profile`, {
-          // headers: { "Content-Type": "application/json" },
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: { "Content-Type": "application/json" },
           withCredentials: true
         })
         setUserData(response.data)
-      } catch (error) {
-        console.error("Error fetching user profile:", error)
+      } catch (err) {
+        console.error("Error fetching user profile:", err)
       }
     }
 
     fetchUserProfile()
-  }, [newEmail])
+  }, [newEmail, newPassword])
 
   const handleEmailUpdate = async e => {
     e.preventDefault()
     try {
       const response = await axios.put(
-        `http://localhost:5000/updateEmail/${userData.id}`,
+        `http://localhost:5000/updateEmail`,
         { email: newEmail },
         {
-          // headers: { "Content-Type": "application/json" },
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: { "Content-Type": "application/json" },
           withCredentials: true
         }
       )
-      setMessage("Email updated successfully!")
+      setMessage(response.data.message)
       setUserData({ email: newEmail })
-      setNewEmail("") // Clear input
-    } catch (error) {
-      console.error("Error updating email:", error)
-      setMessage("Failed to update email.")
+      setNewEmail("")
+    } catch (err) {
+      setMessage(err.response.data.message)
     }
   }
 
@@ -50,19 +46,18 @@ const UserProfile = () => {
     e.preventDefault()
     try {
       const response = await axios.put(
-        `http://localhost:5000/updatePw/${userData.id}`,
+        `http://localhost:5000/updatePw`,
         { password: newPassword },
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true
         }
       )
-      setMessage("Password updated successfully!")
+      setMessage(response.data.message)
       setUserData({ password: newPassword })
-      setNewPassword("") // Clear input
-    } catch (error) {
-      console.error("Error updating password:", error)
-      setMessage("Failed to update password.")
+      setNewPassword("")
+    } catch (err) {
+      setMessage(err.response.data.message)
     }
   }
 
@@ -72,7 +67,6 @@ const UserProfile = () => {
 
   return (
     <div>
-      <Header />
       <h1>User Profile</h1>
       <p>Name: {userData.username}</p>
       <p>Email: {userData.email}</p>

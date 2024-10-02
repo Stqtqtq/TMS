@@ -1,10 +1,8 @@
 import express from "express"
-import session from "express-session"
 import mysql from "mysql2/promise"
 import dotenv from "dotenv"
 import cors from "cors"
 import bcrypt from "bcryptjs"
-import bodyParser from "body-parser"
 import jwt from "jsonwebtoken"
 import cookieParser from "cookie-parser"
 import cookieSession from "cookie-session"
@@ -27,7 +25,7 @@ const corsOptions = {
 // app.set("trust proxy", true)
 
 app.use(cors(corsOptions))
-app.use(express.urlencoded({ extended: true }))
+// app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(
@@ -47,83 +45,138 @@ const db = await mysql.createConnection({
   database: process.env.DB_NAME
 })
 
-/* MIDDLEWARE */
-
-// const validateUsername = (req, res, next) => {
-//   const { username } = req.body;
-//   if (!username || !usernameRegex.test(username)) {
-//     return res.status(400).json({ message: "Invalid username. It must be alphanumeric." });
-//   }
-//   next();
-// };
-
-// const validatePassword = (req, res, next) => {
-//   const { password } = req.body;
-//   if (!password || !passwordRegex.test(password)) {
-//     return res.status(400).json({ message: "Invalid password. It must be 8-10 characters long, alphanumeric, and may include special characters." });
-//   }
-//   next();
-// };
-
-// const validateEmail = (req, res, next) => {
-//   const { email } = req.body;
-//   if (!email || !emailRegex.test(email)) {
-//     return res.status(400).json({ message: "Invalid email format." });
-//   }
-//   next();
-// };
-
-/* END OF MIDDLEWARE */
-
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   const token = req.cookies.token
-  console.log("COOKIE TOKEN: ", token)
   if (!token) {
-    return res.sendStatus(401)
+    return res.status(401).json({ message: "Unauthorized" })
   }
 
-  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
-    if (err) {
-      console.log("Token verification error: ", err)
-      return res.sendStatus(403)
+  try {
+    const user = jwt.verify(token, process.env.JWT_SECRET_KEY)
+
+    // Check if the user is still active
+    const [rows] = await db.query("SELECT is_active FROM accounts WHERE username = ?", [user.username])
+    if (rows.length === 0 || rows[0].is_active === 0) {
+      res.clearCookie("token")
+      return res.status(403).json({ message: "Account is inactive" })
     }
+
     req.user = user
-    // req.token = token
-    console.log(user)
     next()
-  })
+  } catch (error) {
+    console.error("Error in authentication:", error)
+    return res.status(403).json({ message: "Forbidden" })
+  }
 }
 
-app.get("/", authenticateToken, async (req, res) => {
+const checkIsAdmin = async (req, res, next) => {
+  const username = req.user.username
+
   try {
-    const queryAcc = `SELECT * FROM accounts`
-    // const queryGrp = `SELECT * FROM user_groups`
-    const queryDistGrp = `SELECT distinct(groupname) FROM user_groups`
-    const queryGrpList = `SELECT groupname, username FROM user_groups`
+    const [rows] = await db.query("SELECT * FROM user_groups WHERE username = ? AND groupname = 'admin'", [username])
 
-    // const [rows] = await db.query(query)
-    // console.log(rows)
-    // res.json(rows)
+    if (rows.length === 0) {
+      return res.status(403).json({ message: "Access denied: Admins only." })
+    }
+    next()
+  } catch (err) {
+    console.error("Error checking admin status:", err)
+    return res.status(500).send("Server error")
+  }
+}
 
-    // res.json("TRYING TO PASS TOKEN: ", req.token)
-    // res.json({ data: rows, token: req.token })
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body
+  const ipAddr = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress
+  const browserInfo = req.headers["user-agent"]
 
-    const [accRows] = await db.query(queryAcc)
-    console.log("ACCOUNT ROWS: ", accRows)
+  try {
+    const [rows] = await db.query("SELECT * FROM accounts WHERE username = ?", [username])
 
-    const [grpRows] = await db.query(queryGrpList)
-    console.log("GROUP ROWS: ", grpRows)
+    if (rows.length === 0) {
+      return res.status(401).json("Invalid username or password")
+    }
 
-    const [distGrpRows] = await db.query(queryDistGrp)
-    console.log("GROUP ROWS: ", distGrpRows)
+    const user = rows[0]
 
-    // const userWithGrps = accRows.map(user => {
-    //   const userGrps = grpRows.filter(group => group.username === user.username).map(group => group.groupname)
-    //   return {
-    //     ...user,
-    //     groups: userGrps
-    //   }
-    // })
+    if (user.is_active !== 1) {
+      return res.status(403).json("Account is inactive. Please contact an administrator.")
+    }
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if (isMatch) {
+      const token = jwt.sign(
+        {
+          username: user.username,
+          ipAddress: ipAddr,
+          browser: browserInfo
+        },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: "15m" }
+      )
+
+      res.cookie("token", token, {
+        maxAge: 15 * 60 * 1000,
+        httpOnly: true
+        // sameSite: "strict"
+      })
+
+      res.json({ username: user.username, ipAddr, browserInfo, token, message: "Login successful" })
+    } else {
+      res.status(401).send("Invalid username or password")
+    }
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: "Server error" })
+  }
+})
+
+app.post("/logout", async (req, res) => {
+  res.clearCookie("token")
+  res.status(200).json({ message: "Logout successful" })
+})
+
+app.get("/checkAuth", authenticateToken, async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM user_groups WHERE username = ? AND groupname = 'admin'", [req.user.username])
+    const isAdmin = rows.length > 0
+    res.json({ isAuthenticated: true, isAdmin, username: req.user.username })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: "Server error" })
+  }
+})
+
+// NOT USED
+app.get("getAppsInfo", authenticateToken, async (req, res) => {
+  try {
+    const currUser = req.user.username
+
+    const qCurrUser = `SELECT * FROM accounts WHERE username = ?`
+    const qCurrUserGrp = `SELECT GROUP_CONCAT(groupname) as groups FROM user_groups WHERE username = ?`
+
+    const [currUserRows] = await db.query(qCurrUser, [currUser])
+    const [currUserGrpRows] = await db.query(qCurrUserGrp, [currUser])
+
+    const currentUserDetails = (currUserRows.groups = currUserGrpRows.groups)
+
+    res.json({ currentUser: currentUserDetails, token: req.token })
+  } catch (err) {
+    console.error("Something went wrong fetch Apps data!", err)
+  }
+})
+
+app.get("/getUsersInfo", authenticateToken, async (req, res) => {
+  try {
+    const currentUser = req.user.username
+
+    const qAcc = `SELECT * FROM accounts`
+    const qDistGrp = `SELECT distinct(groupname) FROM user_groups`
+    const qGrpList = `SELECT groupname, username FROM user_groups`
+
+    const [accRows] = await db.query(qAcc)
+    const [grpRows] = await db.query(qGrpList)
+    const [distGrpRows] = await db.query(qDistGrp)
 
     // Create a mapping of usernames to their groups
     const groupMap = {}
@@ -144,104 +197,22 @@ app.get("/", authenticateToken, async (req, res) => {
       }
     })
 
-    console.log("USER GROUP AFTER MAPPING AND FILTERING: ", userWithGrps)
-    res.json({ users: userWithGrps, groups: distGrpRows })
+    const currentUserDetails = userWithGrps.find(user => user.username === currentUser)
 
-    // res.json({ users: accRows, groups: grpRows })
+    res.json({ currentUser: currentUserDetails, users: userWithGrps, groups: distGrpRows, token: req.token })
   } catch (err) {
-    console.log("Error querying the database: ", err)
+    console.error("Error querying the database: ", err)
     res.status(500).send("Server error")
   }
-  // db.close()
 })
 
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body
-  const hash = await bcrypt.hash(password, 10)
-  console.log("HASH: ", hash)
-  const ipAddr = req.ip
-  const headers = req.headers
-  const auth = req.body
-  const agent = req.get("user-agent")
-  // const ipAddr = req.headers["x-forwarded-for"] || req.socket.remoteAddress
-
-  // req.session = {}
-  console.log(req.body)
-  const query = `SELECT * FROM accounts WHERE username = ?`
-
-  try {
-    const [rows] = await db.query(query, [username])
-
-    if (rows.length === 0) {
-      return res.status(401).send("Invalid username or password 11")
-    }
-
-    const user = rows[0]
-    console.log(user)
-    console.log("PW:", password)
-    console.log("USERPW:", user.password)
-
-    const isMatch = await bcrypt.compare(password, user.password)
-    console.log(isMatch)
-
-    if (isMatch) {
-      const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" })
-
-      // Set new session values
-      // req.session = {
-      //   username: user.username,
-      //   IPaddress: ipAddr,
-      //   token: token
-      // }
-
-      // console.log(req.session)
-
-      // Set token in cookie
-      res.cookie("token", token, {
-        maxAge: 1 * 60 * 60 * 1000,
-        httpOnly: true // Optional: prevent JavaScript access to cookie
-        // sameSite: "strict"
-      })
-
-      res.json({ username: user.username, token, ipAddr })
-      console.log("Headers: ", headers)
-      console.log("Authorization: ", auth)
-      console.log("Token set in cookie: ", token)
-      // console.log(req.cookies.token) // testing getting token
-      // console.log("Agent: ", agent)
-      // console.log("Signed In")
-      // console.log("Cookies: ", req.cookies)
-      // console.log("Session: ", req.session)
-    } else {
-      res.status(401).send("Invalid username or password 22")
-    }
-  } catch (err) {
-    console.log(err)
-  }
-})
-
-app.post("/logout", async (req, res) => {
-  // Not sure, read so far says that cant manually log out
-  // suppose to be short lasting and set to auto expire
-  res.clearCookie("token")
-  res.status(200).send("Successfully logged out")
-})
-
-app.post("/createUser", authenticateToken, async (req, res) => {
+app.post("/createUser", authenticateToken, checkIsAdmin, async (req, res) => {
   const { username, password, email, groups, is_active } = req.body
   const hash = await bcrypt.hash(password, 10)
 
   const isValidUsername = usernameRegex.test(username)
   const isValidPw = passwordRegex.test(password)
   const isValidEmail = emailRegex.test(email)
-
-  // if (!username || !password || !email) {
-  //   return res.status(400).json({ message: "All fields are required" })
-  // }
-
-  // if (!isValidUsername || !isValidPw || !isValidEmail) {
-  //   return res.status(400).json({ message: "All fields are required" })
-  // }
 
   if (!isValidUsername) {
     return res.status(400).json({ message: "Invalid username. It must be alphanumeric." })
@@ -258,13 +229,12 @@ app.post("/createUser", authenticateToken, async (req, res) => {
     const [existingUser] = await db.query(`SELECT * FROM accounts WHERE username = ?`, [username])
 
     if (existingUser.length > 0) {
-      return res.status(400).json({ message: "Username already exists" })
+      return res.status(400).json({ message: "Username already exists." })
     }
 
     // Insert the new user
     const qAddUser = `INSERT INTO accounts (username, password, email, is_active) VALUES (?, ?, ?, ?)`
     const [resultAddUser] = await db.query(qAddUser, [username, hash, email, is_active])
-    console.log("USER INSERTION RESULT: ", resultAddUser)
     if (resultAddUser.affectedRows === 0) {
       return res.status(500).json({ message: "User creation failed, please try again." })
     }
@@ -277,18 +247,17 @@ app.post("/createUser", authenticateToken, async (req, res) => {
       }
     }
 
-    return res.status(201).json({ message: "User created successfully", result: resultAddUser })
+    return res.status(201).json({ message: "User created successfully.", result: resultAddUser })
   } catch (err) {
-    console.error("ERROR DURING INSERTION: ", err)
-    res.status(500).json({ message: "An error occurred while creating the user" })
+    console.error(err)
+    res.status(500).json({ message: "An error occurred while creating the user." })
   }
 })
 
-app.post("/createGrp", authenticateToken, async (req, res) => {
+app.post("/createGrp", authenticateToken, checkIsAdmin, async (req, res) => {
   const { groupname } = req.body
 
   const isValidGroupname = groupnameRegex.test(groupname)
-  console.log("GROUPNAME CHECK: ", isValidGroupname)
 
   if (!isValidGroupname) {
     return res.status(400).json({ message: "Invalid Groupname. It must be 2-10 characters long." })
@@ -299,74 +268,62 @@ app.post("/createGrp", authenticateToken, async (req, res) => {
     const [existingGrp] = await db.query(`SELECT * FROM user_groups WHERE groupname = ?`, [groupname])
 
     if (existingGrp.length > 0) {
-      return res.status(400).json({ message: "Group already exists" })
+      return res.status(400).json({ message: "Group already exists." })
     }
 
     const query = `INSERT INTO user_groups ( groupname ) VALUES (?)`
 
     const [result, fields] = await db.query(query, [groupname])
 
-    console.log(result)
-    console.log(fields)
-    res.status(201).json({ message: "Group created successfully", result })
+    res.status(201).json({ message: "Group created successfully.", result })
   } catch (err) {
-    console.log(err)
+    console.error(err)
+    res.status(500).json({ message: "An error occurred while creating the group." })
   }
 })
 
-app.put("/update/:id", async (req, res) => {
-  const { id } = req.params
+app.put("/update", authenticateToken, checkIsAdmin, async (req, res) => {
   const { username, password, email, groups, is_active } = req.body
-  // const parseGrp = JSON.stringify(groups)
-  console.log("GROUPS: ", groups)
-  const hash = await bcrypt.hash(password, 10)
-  console.log("CHECKING FOR GROUP UPDATE: ", req.body)
 
   const isValidUsername = usernameRegex.test(username)
-  const isValidPw = passwordRegex.test(password)
   const isValidEmail = emailRegex.test(email)
 
   if (!isValidUsername) {
     return res.status(400).json({ message: "Invalid username. It must be alphanumeric." })
   }
-  if (!isValidPw) {
-    return res.status(400).json({ message: "Invalid password. It must be 8-10 characters long, alphanumeric, and may include special characters." })
-  }
+
   if (!isValidEmail) {
     return res.status(400).json({ message: "Invalid email format." })
   }
 
   try {
-    const qAccUpdate = `UPDATE accounts SET password = ?, email = ?, is_active = ? WHERE id = ?`
-    // const qGrpUpdate = `INSERT INTO user_groups (groupname, username) VALUES ?`
-    // // THIS IS PROBABLY WRONG
-    // // const qGrpUpdate = `UPDATE user_groups SET groupname = ? WHERE username = ?`
+    // Update query string
+    let qAccUpdate = `UPDATE accounts SET email = ?, is_active = ?`
+    const qParams = [email, is_active]
 
-    // // Compile list of groups for each username
-    // // const q = `SELECT username, GROUP_CONCAT(groupname) AS "groups" FROM user_groups GROUP BY username`
+    // Only update password if it is provided
+    if (password) {
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({ message: "Invalid password. It must be 8-10 characters long, alphanumeric, and may include special characters." })
+      }
+      const hash = await bcrypt.hash(password, 10)
+      qAccUpdate += `, password = ?`
+      qParams.push(hash)
+    }
 
-    // const [resultAcc, fieldsAcc] = await db.query(qAccUpdate, [hash, email, is_active, id])
-    // // const [resultGrp, fieldsGrp] = await db.query(qGrpUpdate, [parseGrp, username])
+    qAccUpdate += ` WHERE username = ?`
+    qParams.push(username) // Add username at the end for the WHERE clause
 
-    // const values = groups.map(group => [group, username])
-    // console.log("VALUES LENGTH: ", values.length)
-    // const [resultGrp, fieldsGrp] = await db.query(qGrpUpdate, [values])
-
-    // console.log(resultAcc)
-    // // console.log(fieldsAcc)
-    // console.log(resultGrp)
-    // console.log(fieldsGrp)
-
-    const qCheckExisting = `SELECT groupname FROM user_groups WHERE username = ?`
+    const qCheckExistingGrp = `SELECT groupname FROM user_groups WHERE username = ?`
     const qGrpInsert = `INSERT INTO user_groups (groupname, username) VALUES (?, ?)`
     const qGrpDelete = `DELETE FROM user_groups WHERE username = ? AND groupname NOT IN (?)`
     const qDeleteAll = `DELETE FROM user_groups WHERE username = ?`
 
     // Update account information
-    const [resultAcc] = await db.query(qAccUpdate, [hash, email, is_active, id])
+    const [resultAcc] = await db.query(qAccUpdate, qParams)
 
     // Get the existing groups for the username
-    const [existingGroups] = await db.query(qCheckExisting, [username])
+    const [existingGroups] = await db.query(qCheckExistingGrp, [username])
     const existingGroupNames = existingGroups.map(group => group.groupname)
 
     // Insert new groups that don't exist
@@ -385,25 +342,23 @@ app.put("/update/:id", async (req, res) => {
       await db.query(qDeleteAll, [username])
     }
 
-    res.json({ message: "User updated successfully", accUpdateResult: resultAcc })
+    res.json({ message: "User updated successfully.", accUpdateResult: resultAcc })
   } catch (err) {
-    console.log(err)
+    console.error(err)
+    res.status(500).json({ message: "An error occurred while updating the user." })
   }
 })
 
 app.get("/profile", authenticateToken, async (req, res) => {
-  // Assuming the user ID is stored in the token payload
-  const user = req.user.username // Assuming you're using JWT and req.user is set by the middleware
-  console.log("REQ.USER: ", user)
-
   try {
     const query = `SELECT * FROM accounts WHERE username = ?`
-    const [rows] = await db.query(query, [user])
+    const [rows] = await db.query(query, [req.user.username])
 
     if (rows.length > 0) {
-      res.json(rows[0]) // Return the user information
+      const user = rows[0]
+      res.json({ username: user.username, email: user.email })
     } else {
-      res.status(404).send("User not found")
+      res.status(404).send("User not found.")
     }
   } catch (err) {
     console.error("Error querying the database: ", err)
@@ -411,9 +366,9 @@ app.get("/profile", authenticateToken, async (req, res) => {
   }
 })
 
-app.put("/updateEmail/:id", authenticateToken, async (req, res) => {
-  const { id } = req.params
+app.put("/updateEmail", authenticateToken, async (req, res) => {
   const { email } = req.body
+  const username = req.user.username
 
   const isValidEmail = emailRegex.test(email)
 
@@ -421,52 +376,43 @@ app.put("/updateEmail/:id", authenticateToken, async (req, res) => {
     return res.status(400).json({ message: "Invalid Email format. " })
   }
 
-  // if (!email || email.trim() === "") {
-  //   return res.status(400).json({ message: "Please enter a valid email" })
-  // }
-
   try {
-    const qUpdateEmail = `UPDATE accounts SET email = ? WHERE id = ?`
-    const [result] = await db.query(qUpdateEmail, [email, id])
+    const qUpdateEmail = `UPDATE accounts SET email = ? WHERE username = ?`
+    const [result] = await db.query(qUpdateEmail, [email, username])
 
     if (result.affectedRows === 0) {
-      return res.status(400).json({ message: "User not found " })
+      return res.status(400).json({ message: "User not found." })
     }
 
-    res.json({ message: "Email updated successfully,", result })
+    res.json({ message: "Email updated successfully.", result })
   } catch (err) {
     console.error("Error updating email", err)
-    res.status(500).json({ message: "An error occured while updating the email" })
+    res.status(500).json({ message: "An error occured while updating the email." })
   }
 })
 
-app.put("/updatePw/:id", authenticateToken, async (req, res) => {
-  const { id } = req.params
+app.put("/updatePw", authenticateToken, async (req, res) => {
   const { password } = req.body
+  const username = req.user.username
 
   const isValidPw = passwordRegex.test(password)
 
   if (!isValidPw) {
     return res.status(400).json({ message: "Invalid password. It must be 8-10 characters long, alphanumeric, and may include special characters." })
   }
-
-  // if (!password || password.trim() === "") {
-  //   return res.status(400).json({ message: "Please enter a valid password" })
-  // }
-
   try {
     const hash = await bcrypt.hash(password, 10)
-    const qUpdatePw = `UPDATE accounts SET password = ? WHERE id = ?`
-    const [result] = await db.query(qUpdatePw, [hash, id])
+    const qUpdatePw = `UPDATE accounts SET password = ? WHERE username = ?`
+    const [result] = await db.query(qUpdatePw, [hash, username])
 
     if (result.affectedRows === 0) {
-      return res.status(400).json({ message: "User not found " })
+      return res.status(400).json({ message: "User not found." })
     }
 
-    res.json({ message: "Password updated successfully,", result })
+    res.json({ message: "Password updated successfully.", result })
   } catch (err) {
     console.error("Error updating password", err)
-    res.status(500).json({ message: "An error occured while updating the password" })
+    res.status(500).json({ message: "An error occured while updating the password." })
   }
 })
 

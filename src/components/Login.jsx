@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom"
 import axios from "axios"
 
 const Login = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
 
   const handleLogin = async e => {
     e.preventDefault()
@@ -17,22 +16,15 @@ const Login = () => {
         "http://localhost:5000/login",
         { username, password },
         {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: { "Content-Type": "application/json" },
           withCredentials: true
         }
       )
-      setIsLoggedIn(true)
-      console.log("LOGIN RESPONSE BODY: ", response.body)
-      console.log("Login successful:", response.data)
-      console.log("CHECKING RESPONSE: ", response)
-      // setMessage("Login successful!")
-      navigate("/")
+      // console.log("Login successful:", response.data)
+      // navigate("/")
+      window.location.reload()
     } catch (err) {
-      if (!err?.response) {
-        setMessage("No Server Response")
-      } else {
-        setMessage("Invalid username or password")
-      }
+      setMessage(err.response?.data?.message || "An error has occured")
     }
   }
 

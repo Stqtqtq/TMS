@@ -2,34 +2,13 @@ import React, { useState, useEffect } from "react"
 import Select from "react-select"
 import axios from "axios"
 
-const Form = () => {
-  const [userData, setUserData] = useState([])
+const CreateUser = ({ groupOptions, fetchUserData }) => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [email, setEmail] = useState("")
   const [active, setActive] = useState(true)
-  const [groupOptions, setGroupOptions] = useState([])
   const [selectGroups, setSelectGroups] = useState([])
   const [message, setMessage] = useState("")
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:5000/", {
-        // headers: { "Content-Type": "application/json" },
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        withCredentials: true
-      })
-      .then(response => {
-        console.log("USERTABLE COMPONENT RESPONSE DATA: ", response.data)
-        // setPosts(response.data)
-        setUserData(response.data)
-        setGroupOptions(response.data.groups.map(group => ({ value: group.groupname, label: group.groupname })))
-        // setGrpData(response.data.groups)
-      })
-      .catch(error => {
-        console.error("There was an error fetching the data!", error)
-      })
-  }, [])
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -45,19 +24,18 @@ const Form = () => {
           is_active: active ? 1 : 0
         },
         {
-          // headers: { "Content-Type": "application/json" },
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: { "Content-Type": "application/json" },
           withCredentials: true
         }
       )
 
+      setMessage(response.data.message)
       setUsername("")
       setPassword("")
       setEmail("")
       setSelectGroups([])
-      setGroupOptions([])
       setActive(true)
-      setMessage(response.data.message)
+      fetchUserData()
     } catch (err) {
       if (!err?.response) {
         setMessage("No Server Response")
@@ -98,4 +76,4 @@ const Form = () => {
   )
 }
 
-export default Form
+export default CreateUser
