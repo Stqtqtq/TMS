@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import Select from "react-select"
 import axios from "axios"
+import "./UMS.css"
 
 const CreateUser = ({ groupOptions, fetchUserData }) => {
   const [username, setUsername] = useState("")
@@ -47,31 +48,44 @@ const CreateUser = ({ groupOptions, fetchUserData }) => {
 
   return (
     <div>
-      <h1>Create User</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Username:</label>
-          <input type="text" value={username} onChange={e => setUsername(e.target.value)} required />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-        </div>
-        <div>
-          <label>Email:</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>Groups:</label>
-          <Select isMulti closeMenuOnSelect={false} value={selectGroups} onChange={setSelectGroups} options={groupOptions} />
-        </div>
-        <div>
-          <label>is_active:</label>
-          <input type="checkbox" onChange={e => setActive(e.target.checked)} checked={active} />
-        </div>
-        <button type="submit">Submit</button>
-      </form>
+      {/* <h1>Create User</h1> */}
       {message && <p>{message}</p>}
+      <form onSubmit={handleSubmit}>
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Email</th>
+              <th>Groups</th>
+              <th>is_active</th>
+              <th>Create</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input type="text" value={username} onChange={e => setUsername(e.target.value)} required style={{ width: "100%" }} />
+              </td>
+              <td>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required style={{ width: "100%" }} />
+              </td>
+              <td>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: "100%" }} />
+              </td>
+              <td className="width-column">
+                <Select isMulti closeMenuOnSelect={false} value={selectGroups} onChange={setSelectGroups} options={groupOptions} styles={{ container: provided => ({ ...provided, width: "100%" }) }} />
+              </td>
+              <td style={{ textAlign: "center" }}>
+                <input type="checkbox" onChange={e => setActive(e.target.checked)} checked={active} />
+              </td>
+              <td>
+                <button type="submit">Create</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
     </div>
   )
 }

@@ -1,0 +1,35 @@
+/* User Profile styles (UserProfile.css) */
+.profile-container {
+  max-width: 100%;
+  margin: auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container h1 {
+  margin-bottom: 20px;
+}
+
+.profile-info {
+  margin-bottom: 20px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-form button {
+  align-self: flex-start;
+}
+
+h1 {
+  margin: 20px auto;
+}
+
+p {
+  margin: 20px auto;
+}

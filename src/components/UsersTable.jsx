@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import Select from "react-select"
 import axios from "axios"
+import "./UMS.css"
 
 function UsersTable({ userData, setUserData, groupOptions, fetchUserData }) {
   const [editPost, setEditPost] = useState(null)
@@ -48,7 +49,7 @@ function UsersTable({ userData, setUserData, groupOptions, fetchUserData }) {
 
   return (
     <div>
-      <h1>Users Table</h1>
+      {/* <h1>Users Table</h1> */}
       <table>
         <thead>
           <tr>
@@ -57,7 +58,7 @@ function UsersTable({ userData, setUserData, groupOptions, fetchUserData }) {
             <th>Email</th>
             <th>Groups</th>
             <th>is_active</th>
-            <th>Actions</th>
+            <th>Edit</th>
           </tr>
         </thead>
         <tbody>
@@ -72,15 +73,16 @@ function UsersTable({ userData, setUserData, groupOptions, fetchUserData }) {
                   <td>
                     <input type="email" value={editPost.email} onChange={e => setEditPost({ ...editPost, email: e.target.value })} />
                   </td>
-                  <td>
+                  <td className="width-column">
                     <Select isMulti closeMenuOnSelect={false} defaultValue={item.groups.map(group => ({ value: group, label: group }))} options={groupOptions} onChange={setSelectedGroups} />
                   </td>
-                  <td>
-                    <input type="checkbox" checked={editPost.is_active === 1} onChange={e => setEditPost({ ...editPost, is_active: e.target.checked ? 1 : 0 })} />
+                  <td className="checkbox">
+                    <input type="checkbox" checked={editPost.is_active === 1} onChange={e => setEditPost({ ...editPost, is_active: e.target.checked ? 1 : 0 })} disabled={editPost.username === "admin"} />
                   </td>
-                  <td>
+                  <td className="actions">
                     <button onClick={() => handleSave(editPost)}>Save</button>
                     <button onClick={handleCancel}>Cancel</button>
+                    {message && <p>{message}</p>}
                   </td>
                 </>
               ) : (
@@ -88,13 +90,13 @@ function UsersTable({ userData, setUserData, groupOptions, fetchUserData }) {
                   <td>{item.username}</td>
                   <td>******</td>
                   <td>{item.email}</td>
-                  <td>
-                    <Select isDisabled defaultValue={item.groups.map(group => ({ value: group, label: group }))} options={item.groups.map(group => ({ value: group, label: group }))} />
+                  <td className="width-column">
+                    <Select isMulti isDisabled defaultValue={item.groups.map(group => ({ value: group, label: group }))} options={item.groups.map(group => ({ value: group, label: group }))} />
                   </td>
-                  <td>
+                  <td className="checkbox">
                     <input type="checkbox" checked={item.is_active === 1} disabled />
                   </td>
-                  <td>
+                  <td className="actions">
                     <button onClick={() => handleEdit(item)}>Edit</button>
                   </td>
                 </>
@@ -103,7 +105,6 @@ function UsersTable({ userData, setUserData, groupOptions, fetchUserData }) {
           ))}
         </tbody>
       </table>
-      {message && <p>{message}</p>}
     </div>
   )
 }

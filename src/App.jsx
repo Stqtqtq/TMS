@@ -12,6 +12,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [username, setUsername] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,12 +25,14 @@ function App() {
         setIsAdmin(response.data.isAdmin)
         setUsername(response.data.username)
       } catch (err) {
-        if (err.response && err.response.status === 403 && err.response.data.message === "Account is inactive") {
-          alert("Your account has been deactivated. Please contact an administrator.")
+        if (err.response && err.response.status === 403 && err.response.data.inactiveAccount) {
+          // alert("Your account has been deactivated. Please contact an administrator.")
+          setIsAuthenticated(false)
+          setIsAdmin(false)
+          setUsername("")
         }
-        setIsAuthenticated(false)
-        setIsAdmin(false)
-        setUsername("")
+      } finally {
+        setIsLoading(false)
       }
     }
     checkAuth()
@@ -46,6 +49,10 @@ function App() {
   //   return () => clearInterval(interval)
   // }, [isAuthenticated])
 
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
   return (
     <BrowserRouter>
       {isAuthenticated && <Header isAdmin={isAdmin} username={username} />}
@@ -54,7 +61,8 @@ function App() {
         <Route path="/" element={isAuthenticated ? <TMS /> : <Navigate to="/login" />} />
         <Route path="/profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
         <Route path="/tms" element={isAuthenticated ? <TMS /> : <Navigate to="/login" />} />
-        <Route path="/ums" element={isAuthenticated && isAdmin ? <UMS /> : <Navigate to="/" />} />
+        {/* <Route path="/ums" element={isAuthenticated && isAdmin ? <UMS /> : isAuthenticated ? <Navigate to="/" /> : <Navigate to="/login" />} /> */}
+        <Route path="/ums" element={isAuthenticated ? isAdmin ? <UMS /> : <Navigate to="/" /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

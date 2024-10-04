@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import axios from "axios"
+// import "./UserProfile.css"
 
 const UserProfile = () => {
   const [userData, setUserData] = useState(null)
@@ -66,41 +67,59 @@ const UserProfile = () => {
   }
 
   return (
-    <div>
+    // <div className="profile-container">
+    //   <h1>User Profile</h1>
+    //   <p>Name: {userData.username}</p>
+    //   <p>Email: {userData.email}</p>
+
+    //   <form onSubmit={handleEmailUpdate}>
+    //     <label>
+    //       New Email:
+    //       <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Enter new email" />
+    //     </label>
+    //     <button type="submit">Change Email</button>
+    //   </form>
+
+    //   <form onSubmit={handlePasswordUpdate}>
+    //     <label>
+    //       New Password:
+    //       <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Enter new password" />
+    //     </label>
+    //     <button type="submit">Change Password</button>
+    //   </form>
+
+    //   {message && <p>{message}</p>}
+    // </div>
+
+    <div className="profile-container">
       <h1>User Profile</h1>
       <p>Name: {userData.username}</p>
       <p>Email: {userData.email}</p>
 
       <form onSubmit={handleEmailUpdate}>
-        <div>
-          <label>
-            New Email:
-            <input
-              type="email"
-              value={newEmail}
-              onChange={e => {
-                setNewEmail(e.target.value)
-              }}
-              placeholder="Enter new email"
-            />
-          </label>
+        <div className="form-row">
+          <label>New Email:</label>
+          <input
+            type="email"
+            value={newEmail}
+            onChange={e => setNewEmail(e.target.value)}
+            placeholder="Enter new email"
+            // style={{ flex: "1", marginRight: "10px" }} // input takes up remaining space
+          />
           <button type="submit">Change Email</button>
         </div>
       </form>
 
-      <form onSubmit={handlePasswordUpdate}>
-        <div>
-          <label>
-            New Password:
-            <input
-              type="password"
-              value={newPassword}
-              onChange={e => {
-                setNewPassword(e.target.value)
-              }}
-              placeholder="Enter new password"
-            />
-          </label>
+      <form onSubmit={handlePasswordUpdate} style={{ marginTop: "20px" }}>
+        <div className="form-row">
+          <label>New Password:</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={e => setNewPassword(e.target.value)}
+            placeholder="Enter new password"
+            // style={{ flex: "1", marginRight: "10px" }} // input takes up remaining space
+          />
           <button type="submit">Change Password</button>
         </div>
       </form>

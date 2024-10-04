@@ -1,12 +1,13 @@
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
+import "./Login.css"
 
 const Login = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
 
   const handleLogin = async e => {
     e.preventDefault()
@@ -29,7 +30,7 @@ const Login = () => {
   }
 
   return (
-    <div>
+    <div className="login-container">
       <h1>Login</h1>
       <form onSubmit={handleLogin}>
         <div>
@@ -40,9 +41,9 @@ const Login = () => {
           <label>Password:</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
         </div>
+        {message && <p className="error">{message}</p>}
         <button type="submit">Login</button>
       </form>
-      {message && <p>{message}</p>}
     </div>
   )
 }

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react"
-import NotFound from "./NotFound.jsx"
+import "./TMS.css"
 
 const TMS = () => {
   return (
-    <div>
+    <div className="tms-container">
       <button>Create App</button>
       <table>
         <thead>

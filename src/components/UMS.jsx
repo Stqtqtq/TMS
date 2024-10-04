@@ -3,6 +3,7 @@ import axios from "axios"
 import CreateGrp from "./CreateGrp.jsx"
 import CreateUser from "./CreateUser.jsx"
 import UsersTable from "./UsersTable.jsx"
+import "./UMS.css"
 
 const UMS = () => {
   const [userData, setUserData] = useState([])
@@ -34,11 +35,15 @@ const UMS = () => {
   }, [])
 
   return (
-    <>
-      <CreateGrp addGroup={addGroup} />
-      <CreateUser groupOptions={groupOptions} fetchUserData={fetchUserData} />
+    <div className="ums-container">
+      <div className="group-section">
+        <CreateGrp addGroup={addGroup} />
+      </div>
+      <div className="user-section">
+        <CreateUser groupOptions={groupOptions} fetchUserData={fetchUserData} />
+      </div>
       <UsersTable userData={userData} setUserData={setUserData} groupOptions={groupOptions} fetchUserData={fetchUserData} />
-    </>
+    </div>
   )
 }
 

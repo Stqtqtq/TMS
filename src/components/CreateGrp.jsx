@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import axios from "axios"
+import "./CreateGrp.css"
 
 const CreateGrp = ({ addGroup }) => {
   const [grpName, setGrpName] = useState("")
@@ -34,15 +35,15 @@ const CreateGrp = ({ addGroup }) => {
 
   return (
     <div>
-      <h1>Create Group</h1>
+      {/* <h1>Create Group</h1> */}
+      {message && <p>{message}</p>}
       <form onSubmit={handleSubmit}>
-        <div>
+        <div className="form-row">
           <label>Group Name:</label>
           <input type="text" value={grpName} onChange={e => setGrpName(e.target.value)} required />
+          <button type="submit">Create</button>
         </div>
-        <button type="submit">Submit</button>
       </form>
-      {message && <p>{message}</p>}
     </div>
   )
 }

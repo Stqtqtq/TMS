@@ -1,6 +1,7 @@
 import React from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
+import "./Header.css"
 
 const Header = ({ isAdmin, username }) => {
   // const navigate = useNavigate()
@@ -25,11 +26,17 @@ const Header = ({ isAdmin, username }) => {
 
   return (
     <header>
-      <Link to="/tms">Task Management System</Link>
-      {isAdmin && <Link to="/ums">User Management System</Link>}
-      <Link to="/profile">User Profile</Link>
-      <span>Welcome, {username}!</span>
-      <button onClick={handleLogout}>Sign Out</button>
+      <div className="nav-links">
+        <div>
+          <Link to="/tms">Task Management System</Link>
+          {isAdmin && <Link to="/ums">User Management System</Link>}
+          <Link to="/profile">User Profile</Link>
+        </div>
+        <div className="right-section">
+          <span>Welcome, {username}!</span>
+          <button onClick={handleLogout}>Sign Out</button>
+        </div>
+      </div>
     </header>
   )
 }
