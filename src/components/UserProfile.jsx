@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react"
+import { ToastContainer, toast } from "react-toastify"
 import axios from "axios"
-// import "./UserProfile.css"
+import "./UserProfile.css"
+import "react-toastify/dist/ReactToastify.css"
 
 const UserProfile = () => {
   const [userData, setUserData] = useState(null)
   const [newEmail, setNewEmail] = useState("")
   const [newPassword, setNewPassword] = useState("")
-  const [message, setMessage] = useState("")
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -35,11 +36,29 @@ const UserProfile = () => {
           withCredentials: true
         }
       )
-      setMessage(response.data.message)
       setUserData({ email: newEmail })
       setNewEmail("")
+
+      if (response.data.success) {
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 150,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false
+        })
+      }
     } catch (err) {
-      setMessage(err.response.data.message)
+      toast.error(err.response.data.message, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        style: { width: "450px" }
+      })
     }
   }
 
@@ -54,11 +73,29 @@ const UserProfile = () => {
           withCredentials: true
         }
       )
-      setMessage(response.data.message)
       setUserData({ password: newPassword })
       setNewPassword("")
+
+      if (response.data.success) {
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 150,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false
+        })
+      }
     } catch (err) {
-      setMessage(err.response.data.message)
+      toast.error(err.response.data.message, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        style: { width: "450px" }
+      })
     }
   }
 
@@ -67,64 +104,25 @@ const UserProfile = () => {
   }
 
   return (
-    // <div className="profile-container">
-    //   <h1>User Profile</h1>
-    //   <p>Name: {userData.username}</p>
-    //   <p>Email: {userData.email}</p>
+    <div className="profile-container-wrapper">
+      <ToastContainer limit={1} />
+      <div className="profile-container">
+        <h1>User Profile</h1>
+        <p>Name: {userData.username}</p>
+        <p>Email: {userData.email}</p>
 
-    //   <form onSubmit={handleEmailUpdate}>
-    //     <label>
-    //       New Email:
-    //       <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Enter new email" />
-    //     </label>
-    //     <button type="submit">Change Email</button>
-    //   </form>
-
-    //   <form onSubmit={handlePasswordUpdate}>
-    //     <label>
-    //       New Password:
-    //       <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Enter new password" />
-    //     </label>
-    //     <button type="submit">Change Password</button>
-    //   </form>
-
-    //   {message && <p>{message}</p>}
-    // </div>
-
-    <div className="profile-container">
-      <h1>User Profile</h1>
-      <p>Name: {userData.username}</p>
-      <p>Email: {userData.email}</p>
-
-      <form onSubmit={handleEmailUpdate}>
-        <div className="form-row">
+        <form onSubmit={handleEmailUpdate}>
           <label>New Email:</label>
-          <input
-            type="email"
-            value={newEmail}
-            onChange={e => setNewEmail(e.target.value)}
-            placeholder="Enter new email"
-            // style={{ flex: "1", marginRight: "10px" }} // input takes up remaining space
-          />
+          <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Enter new email" />
           <button type="submit">Change Email</button>
-        </div>
-      </form>
+        </form>
 
-      <form onSubmit={handlePasswordUpdate} style={{ marginTop: "20px" }}>
-        <div className="form-row">
+        <form onSubmit={handlePasswordUpdate}>
           <label>New Password:</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={e => setNewPassword(e.target.value)}
-            placeholder="Enter new password"
-            // style={{ flex: "1", marginRight: "10px" }} // input takes up remaining space
-          />
+          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Enter new password" />
           <button type="submit">Change Password</button>
-        </div>
-      </form>
-
-      {message && <p>{message}</p>}
+        </form>
+      </div>
     </div>
   )
 }

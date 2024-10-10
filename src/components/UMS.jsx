@@ -3,7 +3,7 @@ import axios from "axios"
 import CreateGrp from "./CreateGrp.jsx"
 import CreateUser from "./CreateUser.jsx"
 import UsersTable from "./UsersTable.jsx"
-import "./UMS.css"
+// import "./UMS.css"
 
 const UMS = () => {
   const [userData, setUserData] = useState([])
@@ -26,7 +26,9 @@ const UMS = () => {
         }))
       )
     } catch (err) {
-      console.error("There was an error fetching the data!", err)
+      if (err.response.data.isAdmin === false || err.response.status === 401) {
+        window.location.reload()
+      }
     }
   }
 
@@ -35,13 +37,9 @@ const UMS = () => {
   }, [])
 
   return (
-    <div className="ums-container">
-      <div className="group-section">
-        <CreateGrp addGroup={addGroup} />
-      </div>
-      <div className="user-section">
-        <CreateUser groupOptions={groupOptions} fetchUserData={fetchUserData} />
-      </div>
+    <div>
+      <CreateGrp addGroup={addGroup} />
+      <CreateUser groupOptions={groupOptions} fetchUserData={fetchUserData} />
       <UsersTable userData={userData} setUserData={setUserData} groupOptions={groupOptions} fetchUserData={fetchUserData} />
     </div>
   )

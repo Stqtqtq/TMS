@@ -1,11 +1,9 @@
 import React from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 import axios from "axios"
 import "./Header.css"
 
-const Header = ({ isAdmin, username }) => {
-  // const navigate = useNavigate()
-
+const Header = ({ isAdmin, username, setIsAdmin }) => {
   const handleLogout = async () => {
     try {
       const response = await axios.post(
@@ -16,21 +14,31 @@ const Header = ({ isAdmin, username }) => {
           withCredentials: true
         }
       )
-      // console.log("Successfully logged out")
-      // navigate("/login")
       window.location.reload()
     } catch (err) {
       console.error("Error logging out:", err)
     }
   }
 
+  const handleClick = path => {
+    window.location.herf(path)
+  }
+
   return (
     <header>
       <div className="nav-links">
         <div>
-          <Link to="/tms">Task Management System</Link>
-          {isAdmin && <Link to="/ums">User Management System</Link>}
-          <Link to="/profile">User Profile</Link>
+          <Link to="/tms" onClick={() => handleClick("/tms")}>
+            Task Management System
+          </Link>
+          {isAdmin && (
+            <Link to="/ums" onClick={() => handleClick("/ums")}>
+              User Management System
+            </Link>
+          )}
+          <Link to="/profile" onClick={() => handleClick("/profile")}>
+            User Profile
+          </Link>
         </div>
         <div className="right-section">
           <span>Welcome, {username}!</span>

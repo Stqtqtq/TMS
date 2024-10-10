@@ -1,0 +1,33 @@
+.createUser-container {
+  display: flex;
+  margin: 30px 0;
+
+  table {
+    border-collapse: separate;
+    border-spacing: 15px 5px;
+    border-bottom: 1px solid;
+    width: 100%;
+  }
+  th,
+  td {
+    width: 350px;
+    text-align: center;
+    /* border: 1px solid; */
+    input {
+      width: 90%;
+      height: 20px;
+    }
+  }
+  /* th:nth-child(4),
+  td:nth-child(4) {
+    width: 300px;
+  } */
+  th:nth-child(5),
+  td:nth-child(5) {
+    width: 50px;
+  }
+  th:nth-child(6),
+  td:nth-child(6) {
+    width: 150px;
+  }
+}

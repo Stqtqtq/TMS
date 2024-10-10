@@ -18,8 +18,8 @@ export const login = async (req, res) => {
 
     const user = rows[0]
 
-    if (user.is_active !== 1) {
-      return res.status(403).json("Account is inactive. Please contact an administrator.")
+    if (user.isActive !== 1) {
+      return res.status(401).json("Account is inactive. Please contact an administrator.")
     }
     const isMatch = await bcrypt.compare(password, user.password)
 
@@ -31,17 +31,17 @@ export const login = async (req, res) => {
           browser: browserInfo
         },
         process.env.JWT_SECRET_KEY,
-        { expiresIn: "15m" }
+        { expiresIn: "1h" }
       )
 
       res.cookie("token", token, {
-        maxAge: 15 * 60 * 1000,
+        maxAge: 60 * 60 * 1000,
         httpOnly: true
       })
 
       res.json({ username: user.username, ipAddr, browserInfo, token, message: "Login successful" })
     } else {
-      res.status(401).send("Invalid username or password")
+      res.status(401).json("Invalid username or password")
     }
   } catch (err) {
     console.error(err)
@@ -54,11 +54,9 @@ export const logout = async (req, res) => {
   res.status(200).json({ message: "Logout successful" })
 }
 
-export const checkAuth = async (req, res) => {
+export const landing = async (req, res) => {
   try {
-    const [rows] = await req.db.query("SELECT * FROM user_groups WHERE username = ? AND groupname = 'admin'", [req.user.username])
-    const isAdmin = rows.length > 0
-    res.json({ isAuthenticated: true, isAdmin, username: req.user.username })
+    res.json({ isAuthenticated: true, isAdmin: req.isAdmin, username: req.user.username })
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: "Server error" })

@@ -1,17 +1,16 @@
-.form-row {
-  display: flex;
-  align-items: center;
+.createGrp-container {
+  /* display: flex; */
+  margin-top: 100px;
+
+  form {
+    display: flex;
+    gap: 10px;
+  }
 }
 
-.form-row label {
-  flex: 2; /* Makes the label take up more space */
-}
-
-.form-row input {
-  flex: 4; /* Makes the input field shorter */
-  margin-right: 700px;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 100%; /* Ensures the input stretches to the available space defined by flex */
+.createGrp-error-msg {
+  position: absolute;
+  top: 55px;
+  left: 110px;
+  color: red;
 }

@@ -1,35 +1,32 @@
-/* User Profile styles (UserProfile.css) */
+.profile-container-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  height: 100vh; /* Full viewport height */
+}
+
 .profile-container {
-  max-width: 100%;
-  margin: auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.profile-container h1 {
-  margin-bottom: 20px;
-}
-
-.profile-info {
-  margin-bottom: 20px;
-}
-
-.profile-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
+  justify-content: center;
+  margin-top: 100px;
 
-.profile-form button {
-  align-self: flex-start;
-}
+  p {
+    margin: 10px 0;
+    padding: 0;
+  }
+  form {
+    display: flex;
+    flex-direction: row;
+    margin-top: 40px;
 
-h1 {
-  margin: 20px auto;
-}
+    label {
+      width: 110px;
+    }
 
-p {
-  margin: 20px auto;
+    button {
+      width: 130px;
+      margin-left: 20px;
+    }
+  }
 }

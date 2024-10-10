@@ -15,9 +15,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const landingPage = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/checkAuth", {
+        const response = await axios.get("http://localhost:5000/landing", {
           headers: { "Content-Type": "application/json" },
           withCredentials: true
         })
@@ -26,7 +26,6 @@ function App() {
         setUsername(response.data.username)
       } catch (err) {
         if (err.response && err.response.status === 403 && err.response.data.inactiveAccount) {
-          // alert("Your account has been deactivated. Please contact an administrator.")
           setIsAuthenticated(false)
           setIsAdmin(false)
           setUsername("")
@@ -35,19 +34,8 @@ function App() {
         setIsLoading(false)
       }
     }
-    checkAuth()
+    landingPage()
   }, [])
-
-  // Add this effect to periodically check authentication status
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (isAuthenticated) {
-  //       checkAuth()
-  //     }
-  //   }, 60000) // Check every minute
-
-  //   return () => clearInterval(interval)
-  // }, [isAuthenticated])
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -55,13 +43,12 @@ function App() {
 
   return (
     <BrowserRouter>
-      {isAuthenticated && <Header isAdmin={isAdmin} username={username} />}
+      {isAuthenticated && <Header isAdmin={isAdmin} setIsAdmin={setIsAdmin} username={username} />}
       <Routes>
         <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
         <Route path="/" element={isAuthenticated ? <TMS /> : <Navigate to="/login" />} />
         <Route path="/profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
         <Route path="/tms" element={isAuthenticated ? <TMS /> : <Navigate to="/login" />} />
-        {/* <Route path="/ums" element={isAuthenticated && isAdmin ? <UMS /> : isAuthenticated ? <Navigate to="/" /> : <Navigate to="/login" />} /> */}
         <Route path="/ums" element={isAuthenticated ? isAdmin ? <UMS /> : <Navigate to="/" /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

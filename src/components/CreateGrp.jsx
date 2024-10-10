@@ -1,10 +1,11 @@
 import React, { useState } from "react"
+import { ToastContainer, toast } from "react-toastify"
 import axios from "axios"
 import "./CreateGrp.css"
+import "react-toastify/dist/ReactToastify.css"
 
 const CreateGrp = ({ addGroup }) => {
   const [grpName, setGrpName] = useState("")
-  const [message, setMessage] = useState("")
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -21,28 +22,42 @@ const CreateGrp = ({ addGroup }) => {
         }
       )
 
-      setMessage(response.data.message)
       setGrpName("")
       addGroup(grpName)
-    } catch (err) {
-      if (!err?.response) {
-        setMessage("No Server Response")
-      } else {
-        setMessage(err.response.data.message)
+
+      if (response.data.success) {
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 150,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false
+        })
       }
+    } catch (err) {
+      if (err.response.data.isAdmin === false || err.response.status === 401) {
+        window.location.reload()
+      }
+      toast.error(err.response.data.message, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        style: { width: "450px" }
+      })
     }
   }
 
   return (
-    <div>
-      {/* <h1>Create Group</h1> */}
-      {message && <p>{message}</p>}
+    <div className="createGrp-container">
+      <ToastContainer limit={1} />
       <form onSubmit={handleSubmit}>
-        <div className="form-row">
-          <label>Group Name:</label>
-          <input type="text" value={grpName} onChange={e => setGrpName(e.target.value)} required />
-          <button type="submit">Create</button>
-        </div>
+        <label>Group Name:</label>
+        <input type="text" value={grpName} onChange={e => setGrpName(e.target.value)} />
+        <button type="submit">Create</button>
       </form>
     </div>
   )

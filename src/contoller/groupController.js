@@ -1,12 +1,16 @@
 const groupnameRegex = /^[a-zA-Z0-9_]+$/
 
 export const createGrp = async (req, res) => {
+  if (!req.isAdmin) {
+    return res.status(403).json({ message: "Forbidden", success: false, isAdmin: req.isAdmin })
+  }
+
   const { groupname } = req.body
 
   const isValidGroupname = groupnameRegex.test(groupname)
 
   if (!isValidGroupname) {
-    return res.status(400).json({ message: "Invalid Groupname. It must be 2-10 characters long." })
+    return res.status(400).json({ message: "Invalid Groupname. It must be 2-10 characters long.", success: false, isAdmin: req.isAdmin })
   }
 
   try {
@@ -14,16 +18,16 @@ export const createGrp = async (req, res) => {
     const [existingGrp] = await req.db.query(`SELECT * FROM user_groups WHERE groupname = ?`, [groupname])
 
     if (existingGrp.length > 0) {
-      return res.status(400).json({ message: "Group already exists." })
+      return res.status(400).json({ message: "Group already exists.", success: false, isAdmin: req.isAdmin })
     }
 
     const query = `INSERT INTO user_groups ( groupname ) VALUES (?)`
 
-    const [result, fields] = await req.db.query(query, [groupname])
+    const [result] = await req.db.query(query, [groupname])
 
-    res.status(201).json({ message: "Group created successfully.", result })
+    res.status(201).json({ message: "Group created successfully.", result, success: true, isAdmin: req.isAdmin })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ message: "An error occurred while creating the group." })
+    res.status(500).json({ message: "An error occurred while creating the group.", success: false, isAdmin: req.isAdmin })
   }
 }

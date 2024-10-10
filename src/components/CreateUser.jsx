@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react"
+import { ToastContainer, toast } from "react-toastify"
 import Select from "react-select"
 import axios from "axios"
-import "./UMS.css"
+import "./CreateUser.css"
+import "react-toastify/dist/ReactToastify.css"
 
 const CreateUser = ({ groupOptions, fetchUserData }) => {
   const [username, setUsername] = useState("")
@@ -9,7 +11,6 @@ const CreateUser = ({ groupOptions, fetchUserData }) => {
   const [email, setEmail] = useState("")
   const [active, setActive] = useState(true)
   const [selectGroups, setSelectGroups] = useState([])
-  const [message, setMessage] = useState("")
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -22,7 +23,7 @@ const CreateUser = ({ groupOptions, fetchUserData }) => {
           password,
           email,
           groups: selectGroups.map(group => group.value),
-          is_active: active ? 1 : 0
+          isActive: active ? 1 : 0
         },
         {
           headers: { "Content-Type": "application/json" },
@@ -30,26 +31,42 @@ const CreateUser = ({ groupOptions, fetchUserData }) => {
         }
       )
 
-      setMessage(response.data.message)
       setUsername("")
       setPassword("")
       setEmail("")
       setSelectGroups([])
       setActive(true)
-      fetchUserData()
-    } catch (err) {
-      if (!err?.response) {
-        setMessage("No Server Response")
-      } else {
-        setMessage(err.response.data.message)
+
+      if (response.data.success) {
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 150,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          onClose: () => fetchUserData()
+        })
       }
+    } catch (err) {
+      if (err.response.data.isAdmin === false || err.response.status === 401) {
+        window.location.reload()
+      }
+      toast.error(err.response.data.message, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        style: { width: "450px" }
+      })
     }
   }
 
   return (
-    <div>
-      {/* <h1>Create User</h1> */}
-      {message && <p>{message}</p>}
+    <div className="createUser-container">
+      <ToastContainer limit={1} />
       <form onSubmit={handleSubmit}>
         <table>
           <thead>
@@ -58,25 +75,25 @@ const CreateUser = ({ groupOptions, fetchUserData }) => {
               <th>Password</th>
               <th>Email</th>
               <th>Groups</th>
-              <th>is_active</th>
-              <th>Create</th>
+              <th>Active</th>
+              <th>Create/Edit</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>
-                <input type="text" value={username} onChange={e => setUsername(e.target.value)} required style={{ width: "100%" }} />
+                <input type="text" value={username} onChange={e => setUsername(e.target.value)} />
               </td>
               <td>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} required style={{ width: "100%" }} />
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
               </td>
               <td>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)} required style={{ width: "100%" }} />
+                <input type="text" value={email} onChange={e => setEmail(e.target.value)} />
               </td>
-              <td className="width-column">
-                <Select isMulti closeMenuOnSelect={false} value={selectGroups} onChange={setSelectGroups} options={groupOptions} styles={{ container: provided => ({ ...provided, width: "100%" }) }} />
+              <td>
+                <Select isMulti closeMenuOnSelect={false} value={selectGroups} onChange={setSelectGroups} options={groupOptions} />
               </td>
-              <td style={{ textAlign: "center" }}>
+              <td>
                 <input type="checkbox" onChange={e => setActive(e.target.checked)} checked={active} />
               </td>
               <td>

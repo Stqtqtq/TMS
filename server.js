@@ -3,7 +3,6 @@ import mysql from "mysql2/promise"
 import dotenv from "dotenv"
 import cors from "cors"
 import cookieParser from "cookie-parser"
-// import cookieSession from "cookie-session"
 
 import routes from "./src/routes/routes.js"
 
@@ -13,22 +12,13 @@ const port = 5000
 const app = express()
 
 const corsOptions = {
-  origin: "http://localhost:5173", // Allow only your React app
-  credentials: true // Allow credentials to be included
+  origin: "http://localhost:5173",
+  credentials: true
 }
 
 app.use(cors(corsOptions))
 app.use(express.json())
 app.use(cookieParser())
-// app.use(
-//   cookieSession({
-//     name: "session",
-//     secret: process.env.SESSION_SECRET,
-
-//     // Cookie Options
-//     maxAge: 1 * 60 * 60 * 1000
-//   })
-// )
 
 const db = await mysql.createConnection({
   host: process.env.DB_HOST,
@@ -47,3 +37,17 @@ app.use(routes)
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`)
 })
+
+const handleDBShutdown = async signal => {
+  console.log(`Received ${signal}. Shutting down gracefully...`)
+  try {
+    await db.end()
+  } catch (error) {
+    console.error("Error closing MySQL connection:", error)
+  } finally {
+    process.exit(0)
+  }
+}
+
+process.on("SIGINT", () => handleDBShutdown("SIGINT"))
+process.on("SIGTERM", () => handleDBShutdown("SIGTERM"))
