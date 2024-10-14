@@ -1,0 +1,65 @@
+.modal-container {
+  /* position: relative; */
+  z-index: 2;
+}
+/* Container for the form content */
+.form-content {
+  display: flex;
+  justify-content: space-between;
+  padding: 50px 50px !important;
+  gap: 10px;
+}
+
+/* Left column with form fields */
+.left-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Allows more space for the left side */
+  h3 {
+    margin-top: 80px;
+  }
+}
+
+/* Right column for the description */
+.right-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Description column takes less space */
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  padding: 5px 0;
+
+  label {
+    width: 150px;
+  }
+  p {
+    margin: 0;
+  }
+}
+
+label {
+  font-weight: bold;
+}
+
+.cancel-button {
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  margin-right: 30px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}

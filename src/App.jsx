@@ -6,6 +6,7 @@ import Header from "./components/Header.jsx"
 import UserProfile from "./components/UserProfile.jsx"
 import TMS from "./components/TMS.jsx"
 import UMS from "./components/UMS.jsx"
+import AppDashboard from "./components/AppDashboard.jsx"
 import NotFound from "./components/NotFound.jsx"
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
         <Route path="/profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
         <Route path="/tms" element={isAuthenticated ? <TMS /> : <Navigate to="/login" />} />
         <Route path="/ums" element={isAuthenticated ? isAdmin ? <UMS /> : <Navigate to="/" /> : <Navigate to="/login" />} />
+        <Route path="/app" element={<AppDashboard />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs"
+import { db } from "../utils/db.js"
 
 const usernameRegex = /^[a-zA-Z0-9]+$/
 const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,10}$/
-const emailRegex = /^[a-zA-Z0-9!@#$%^&*()_+={}|[\]\\:;"'<>,.?/~`-]+@[a-zA-Z1-9]+\.[a-zA-Z]{2,}$/
+const emailRegex = /^[a-zA-Z0-9!@#$%^&*()_+={}|[\]\\:;"'<>,.?/~`-]+@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$/
 
 export const getUsersInfo = async (req, res) => {
   if (!req.isAdmin) {
@@ -13,9 +14,9 @@ export const getUsersInfo = async (req, res) => {
     const qGrpList = `SELECT groupname, username FROM user_groups`
     const qDistGrp = `SELECT distinct(groupname) FROM user_groups`
 
-    const [accRows] = await req.db.query(qAcc)
-    const [grpRows] = await req.db.query(qGrpList)
-    const [distGrpRows] = await req.db.query(qDistGrp)
+    const [accRows] = await db.execute(qAcc)
+    const [grpRows] = await db.execute(qGrpList)
+    const [distGrpRows] = await db.execute(qDistGrp)
 
     // Create a mapping of usernames to their groups
     const groupMap = {}
@@ -67,7 +68,7 @@ export const createUser = async (req, res) => {
 
   try {
     // Check if the username already exists
-    const [existingUser] = await req.db.query(`SELECT * FROM accounts WHERE username = ?`, [username])
+    const [existingUser] = await db.execute(`SELECT * FROM accounts WHERE username = ?`, [username])
 
     if (existingUser.length > 0) {
       return res.status(400).json({ message: "Username already exists.", success: false, isAdmin: req.isAdmin })
@@ -75,7 +76,7 @@ export const createUser = async (req, res) => {
 
     // Insert the new user if it does not exist
     const qAddUser = `INSERT INTO accounts (username, password, email, isActive) VALUES (?, ?, ?, ?)`
-    const [resultAddUser] = await req.db.query(qAddUser, [username, hash, email, isActive])
+    const [resultAddUser] = await db.execute(qAddUser, [username, hash, email, isActive])
     if (resultAddUser.affectedRows === 0) {
       return res.status(500).json({ message: "User creation failed, please try again.", success: false, isAdmin: req.isAdmin })
     }
@@ -84,7 +85,7 @@ export const createUser = async (req, res) => {
     if (groups && groups.length > 0) {
       const qAddUserGrp = `INSERT INTO user_groups (groupname, username) VALUES (?, ?)`
       for (const group of groups) {
-        await req.db.query(qAddUserGrp, [group, username])
+        await db.execute(qAddUserGrp, [group, username])
       }
     }
 
@@ -142,30 +143,32 @@ export const update = async (req, res) => {
 
     const qCheckExistingGrp = `SELECT groupname FROM user_groups WHERE username = ?`
     const qGrpInsert = `INSERT INTO user_groups (groupname, username) VALUES (?, ?)`
-    const qGrpDelete = `DELETE FROM user_groups WHERE username = ? AND groupname NOT IN (?)`
+    // const qGrpDelete = `DELETE FROM user_groups WHERE username = ? AND groupname NOT IN (?)`
     const qDeleteAll = `DELETE FROM user_groups WHERE username = ?`
 
     // Update account information
-    const [resultAcc] = await req.db.query(qAccUpdate, qParams)
+    const [resultAcc] = await db.execute(qAccUpdate, qParams)
 
     // Get the existing groups for the username
-    const [existingGroups] = await req.db.query(qCheckExistingGrp, [username])
+    const [existingGroups] = await db.execute(qCheckExistingGrp, [username])
     const existingGroupNames = existingGroups.map(group => group.groupname)
 
     // Insert new groups that don't exist
     for (const group of groups) {
       if (!existingGroupNames.includes(group)) {
-        await req.db.query(qGrpInsert, [group, username])
+        await db.execute(qGrpInsert, [group, username])
       }
     }
 
     // Handle deletion of groups if removed from user
     if (groups.length > 0) {
+      const placeholders = groups.map(() => "?").join(", ")
+      const qGrpDelete = `DELETE FROM user_groups WHERE username = ? AND groupname NOT IN (${placeholders}) `
       // Delete groups that are no longer associated with the username
-      await req.db.query(qGrpDelete, [username, groups])
+      await db.execute(qGrpDelete, [username, ...groups])
     } else {
       // If no groups are provided, delete all groups for the username
-      await req.db.query(qDeleteAll, [username])
+      await db.execute(qDeleteAll, [username])
     }
 
     res.json({ message: "User updated successfully.", accUpdateResult: resultAcc, success: true, isAdmin: req.isAdmin })
@@ -178,7 +181,7 @@ export const update = async (req, res) => {
 export const profile = async (req, res) => {
   try {
     const query = `SELECT * FROM accounts WHERE username = ?`
-    const [rows] = await req.db.query(query, [req.user.username])
+    const [rows] = await db.execute(query, [req.user.username])
 
     if (rows.length > 0) {
       const user = rows[0]
@@ -204,7 +207,7 @@ export const updateEmail = async (req, res) => {
 
   try {
     const qUpdateEmail = `UPDATE accounts SET email = ? WHERE username = ?`
-    const [result] = await req.db.query(qUpdateEmail, [email, username])
+    const [result] = await db.execute(qUpdateEmail, [email, username])
 
     if (result.affectedRows === 0) {
       return res.status(400).json({ message: "User not found.", success: false })
@@ -229,7 +232,7 @@ export const updatePw = async (req, res) => {
   try {
     const hash = await bcrypt.hash(password, 10)
     const qUpdatePw = `UPDATE accounts SET password = ? WHERE username = ?`
-    const [result] = await req.db.query(qUpdatePw, [hash, username])
+    const [result] = await db.execute(qUpdatePw, [hash, username])
 
     if (result.affectedRows === 0) {
       return res.status(400).json({ message: "User not found.", success: false })

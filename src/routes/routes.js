@@ -2,6 +2,8 @@ import express from "express"
 import { login, logout, landing } from "../contoller/authController.js"
 import { getUsersInfo, createUser, update, profile, updateEmail, updatePw } from "../contoller/userController.js"
 import { createGrp } from "../contoller/groupController.js"
+import { getAppsInfo, createApp } from "../contoller/appController.js"
+import { getPlansInfo, createPlan } from "../contoller/planController.js"
 import { authenticateToken, checkIsAdmin } from "../middleware/auth.js"
 
 const router = express.Router()
@@ -10,6 +12,12 @@ router.post("/login", login)
 router.post("/logout", logout)
 
 router.get("/landing", authenticateToken, checkIsAdmin, landing)
+router.get("/getAppsInfo", authenticateToken, getAppsInfo)
+router.post("/createApp", authenticateToken, createApp)
+
+router.get("/getPlansInfo", authenticateToken, getPlansInfo)
+router.post("/createPlan", authenticateToken, createPlan)
+
 router.get("/getUsersInfo", authenticateToken, checkIsAdmin, getUsersInfo)
 router.post("/createGrp", authenticateToken, checkIsAdmin, createGrp)
 router.post("/createUser", authenticateToken, checkIsAdmin, createUser)

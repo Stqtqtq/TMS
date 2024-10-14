@@ -1,0 +1,28 @@
+.appsTable-container {
+  display: flex;
+
+  table {
+    border-collapse: separate;
+    border-spacing: 5px 5px;
+    width: 100%;
+  }
+  th,
+  td {
+    width: 100px;
+    text-align: center;
+    /* border: 1px solid; */
+    input {
+      width: 90%;
+      height: 20px;
+    }
+  }
+  th:nth-child(10),
+  td:nth-child(10) {
+    width: 400px;
+  }
+}
+
+textarea {
+  resize: none;
+  width: 100%;
+}

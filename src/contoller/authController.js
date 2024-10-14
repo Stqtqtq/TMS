@@ -1,8 +1,6 @@
-import dotenv from "dotenv"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-
-dotenv.config()
+import { db } from "../utils/db.js"
 
 export const login = async (req, res) => {
   const { username, password } = req.body
@@ -10,7 +8,7 @@ export const login = async (req, res) => {
   const browserInfo = req.headers["user-agent"]
 
   try {
-    const [rows] = await req.db.query("SELECT * FROM accounts WHERE username = ?", [username])
+    const [rows] = await db.execute("SELECT * FROM accounts WHERE username = ?", [username])
 
     if (rows.length === 0) {
       return res.status(401).json("Invalid username or password")
@@ -31,11 +29,11 @@ export const login = async (req, res) => {
           browser: browserInfo
         },
         process.env.JWT_SECRET_KEY,
-        { expiresIn: "1h" }
+        { expiresIn: "6h" }
       )
 
       res.cookie("token", token, {
-        maxAge: 60 * 60 * 1000,
+        maxAge: 6 * 60 * 60 * 1000,
         httpOnly: true
       })
 

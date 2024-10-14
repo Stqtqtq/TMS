@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken"
+import { db } from "../utils/db.js"
 
 export const authenticateToken = async (req, res, next) => {
   const token = req.cookies.token
@@ -10,7 +11,7 @@ export const authenticateToken = async (req, res, next) => {
     const user = jwt.verify(token, process.env.JWT_SECRET_KEY)
 
     // Check if the user is still active
-    const [rows] = await req.db.query("SELECT isActive FROM accounts WHERE username = ?", [user.username])
+    const [rows] = await db.execute("SELECT isActive FROM accounts WHERE username = ?", [user.username])
     if (rows.length === 0 || rows[0].isActive === 0) {
       res.clearCookie("token")
       return res.status(401).json({ message: "Account is inactive", inactiveAccount: true })
@@ -27,7 +28,7 @@ export const authenticateToken = async (req, res, next) => {
 export const checkIsAdmin = async (req, res, next) => {
   const username = req.user.username
   try {
-    req.isAdmin = await checkGrp(req, username, "Admin")
+    req.isAdmin = await checkGrp(username, "Admin")
     next()
   } catch (err) {
     console.error("Error checking admin status:", err)
@@ -35,12 +36,12 @@ export const checkIsAdmin = async (req, res, next) => {
   }
 }
 
-export const checkGrp = async (req, username, group) => {
+export const checkGrp = async (username, group) => {
   try {
-    const [rows] = await req.db.query("SELECT * FROM user_groups WHERE username = ? AND groupname = ?", [username, group])
+    const [rows] = await db.execute("SELECT * FROM user_groups WHERE username = ? AND groupname = ?", [username, group])
     return rows.length > 0
   } catch (err) {
     console.error("Error connecting to database:", err)
-    return res.status(500).send("Server error")
+    throw new Error("Server error")
   }
 }

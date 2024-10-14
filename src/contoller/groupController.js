@@ -1,3 +1,5 @@
+import { db } from "../utils/db.js"
+
 const groupnameRegex = /^[a-zA-Z0-9_]+$/
 
 export const createGrp = async (req, res) => {
@@ -10,12 +12,12 @@ export const createGrp = async (req, res) => {
   const isValidGroupname = groupnameRegex.test(groupname)
 
   if (!isValidGroupname) {
-    return res.status(400).json({ message: "Invalid Groupname. It must be 2-10 characters long.", success: false, isAdmin: req.isAdmin })
+    return res.status(400).json({ message: "Invalid Groupname. It must be alphanumeric.", success: false, isAdmin: req.isAdmin })
   }
 
   try {
     // Check if the username already exists
-    const [existingGrp] = await req.db.query(`SELECT * FROM user_groups WHERE groupname = ?`, [groupname])
+    const [existingGrp] = await db.execute(`SELECT * FROM user_groups WHERE groupname = ?`, [groupname])
 
     if (existingGrp.length > 0) {
       return res.status(400).json({ message: "Group already exists.", success: false, isAdmin: req.isAdmin })
@@ -23,7 +25,7 @@ export const createGrp = async (req, res) => {
 
     const query = `INSERT INTO user_groups ( groupname ) VALUES (?)`
 
-    const [result] = await req.db.query(query, [groupname])
+    const [result] = await db.execute(query, [groupname])
 
     res.status(201).json({ message: "Group created successfully.", result, success: true, isAdmin: req.isAdmin })
   } catch (err) {

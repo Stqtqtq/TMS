@@ -1,27 +1,46 @@
 import React, { useState, useEffect } from "react"
-import "./TMS.css"
+import axios from "axios"
+import CreateApp from "./CreateApp.jsx"
+import AppsTable from "./AppsTable.jsx"
+import { useNavigate } from "react-router-dom"
 
 const TMS = () => {
+  const navigate = useNavigate()
+
+  const [appsInfo, setAppsInfo] = useState([])
+  const [groupOptions, setGroupOptions] = useState([])
+
+  const fetchAppsInfo = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/getAppsInfo", {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true
+      })
+      setAppsInfo(response.data.apps)
+      setGroupOptions(
+        response.data.groups.map(group => ({
+          value: group.groupname,
+          label: group.groupname
+        }))
+      )
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  useEffect(() => {
+    fetchAppsInfo()
+  }, [])
+
+  const handleOpenApp = app => {
+    // Navigate to the '/app' endpoint with the selected app data in the state
+    navigate("/app", { state: { app } })
+  }
+
   return (
-    <div className="tms-container">
-      {/* <button>Create App</button> */}
-      <table>
-        <thead>
-          <tr>
-            <th>Acronym</th>
-            <th>Rnumber</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Task Create</th>
-            <th>Task Open</th>
-            <th>Task to-do</th>
-            <th>Task Doing</th>
-            <th>Task Done</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>{/* TBD */}</tbody>
-      </table>
+    <div>
+      <CreateApp groupOptions={groupOptions} fetchAppsInfo={fetchAppsInfo} />
+      <AppsTable appsInfo={appsInfo} handleOpenApp={handleOpenApp} />
     </div>
   )
 }
