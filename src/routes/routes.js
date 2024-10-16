@@ -4,6 +4,7 @@ import { getUsersInfo, createUser, update, profile, updateEmail, updatePw } from
 import { createGrp } from "../contoller/groupController.js"
 import { getAppsInfo, createApp } from "../contoller/appController.js"
 import { getPlansInfo, createPlan } from "../contoller/planController.js"
+import { getTasksInfo, createTask, updateTask } from "../contoller/taskController.js"
 import { authenticateToken, checkIsAdmin } from "../middleware/auth.js"
 
 const router = express.Router()
@@ -15,8 +16,13 @@ router.get("/landing", authenticateToken, checkIsAdmin, landing)
 router.get("/getAppsInfo", authenticateToken, getAppsInfo)
 router.post("/createApp", authenticateToken, createApp)
 
-router.get("/getPlansInfo", authenticateToken, getPlansInfo)
+// router.get("/getPlansInfo", authenticateToken, getPlansInfo)
+router.post("/getPlansInfo", authenticateToken, getPlansInfo)
 router.post("/createPlan", authenticateToken, createPlan)
+
+router.post("/getTasksInfo", authenticateToken, getTasksInfo)
+router.post("/createTask", authenticateToken, createTask)
+router.put("/updateTask", authenticateToken, updateTask)
 
 router.get("/getUsersInfo", authenticateToken, checkIsAdmin, getUsersInfo)
 router.post("/createGrp", authenticateToken, checkIsAdmin, createGrp)

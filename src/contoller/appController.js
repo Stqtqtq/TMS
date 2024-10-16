@@ -15,8 +15,8 @@ export const getAppsInfo = async (req, res) => {
 
     const [distGrpRows] = await db.execute(qDistGrp)
     const [allAppsInfo] = await db.execute(qAllApps)
-
-    res.json({ apps: allAppsInfo, groups: distGrpRows })
+    console.log(req.user)
+    res.json({ apps: allAppsInfo, groups: distGrpRows, currentUser: req.user.username })
   } catch (err) {
     console.error("Error querying the database: ", err)
     res.status(500).send("Server error")

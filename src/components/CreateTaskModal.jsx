@@ -1,91 +1,166 @@
-import React from "react"
+import React, { useState } from "react"
+import axios from "axios"
 import Modal from "react-modal"
 import Select from "react-select"
 import "./CreateTaskModal.css"
+import { ToastContainer, toast } from "react-toastify"
 
 Modal.setAppElement("#root")
 
-const CreateTaskModal = ({ isOpen, closeModal }) => {
-  // Hardcoded values for demonstration purposes
-  const appAcronym = "Sample Acronym"
-  const description = "This is a sample description text."
+const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, isOpen, closeModal }) => {
+  const today = new Date().toISOString().split("T")[0]
 
-  const planOptions = [
-    { value: "Plan1", label: "Plan1" },
-    { value: "Plan2", label: "Plan2" },
-    { value: "Plan3", label: "Plan3" }
-  ]
+  const [taskForm, setTaskForm] = useState({
+    appAcronym: appInfo?.app_acronym || "",
+    appRNumber: appInfo?.app_rnumber || "",
+    taskName: "",
+    planName: "",
+    creator: currentUser,
+    owner: currentUser,
+    description: "",
+    notes: "",
+    createDate: today
+  })
+
+  const handleChange = e => {
+    const { name, value } = e.target
+    setTaskForm({
+      ...taskForm,
+      [name]: value
+    })
+  }
+
+  const handleSelectChange = (name, selectedOption) => {
+    setTaskForm({
+      ...taskForm,
+      [name]: selectedOption.value
+    })
+  }
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/createTask",
+        {
+          ...taskForm
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true
+        }
+      )
+
+      setTaskForm({
+        appAcronym: appInfo?.app_acronym || "",
+        appRNumber: appInfo?.app_rnumber || "",
+        taskName: "",
+        planName: null,
+        creator: currentUser,
+        owner: currentUser,
+        description: "",
+        notes: "",
+        createDate: today
+      })
+
+      if (response.data.success) {
+        toast.success(response.data.message, {
+          position: "top-center",
+          autoClose: 150,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          onClose: () => fetchTasksInfo()
+        })
+      }
+    } catch (err) {
+      // if (err.response.data.isAdmin === false || err.response.status === 401) {
+      //   window.location.reload()
+      // }
+      toast.error(err.response.data.message, {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        style: { width: "450px" }
+      })
+    }
+  }
 
   return (
     <div id="root" className="modal-container">
       <Modal isOpen={isOpen} contentLabel="Example Modal">
+        <ToastContainer limit={1} />
         <button className="close-button" onClick={closeModal}>
           &times;
         </button>
 
         <div className="modal-form">
-          <div className="form-content">
-            {/* Left Column */}
-            <div className="left-column">
-              <div className="form-group">
-                <label>Task Name:</label>
-                <input type="text" className="input-field" placeholder="Enter task name" />
+          <form onSubmit={handleSubmit}>
+            <div className="form-content">
+              {/* Left Column */}
+              <div className="left-column">
+                <div className="form-group">
+                  <label>Task Name:</label>
+                  <input type="text" name="taskName" value={taskForm.taskName} onChange={handleChange} />
+                </div>
+
+                <div className="form-group">
+                  <label>App Acronym:</label>
+                  <p className="read-only-text">{appInfo.app_acronym}</p>
+                </div>
+
+                <div className="form-group">
+                  <label>Plan:</label>
+                  <Select name="planName" closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} />
+                </div>
+
+                <div className="form-group">
+                  <label>State:</label>
+                  <p className="read-only-text" value="Open">
+                    Open
+                  </p>
+                </div>
+
+                <div className="form-group">
+                  <label>Creator:</label>
+                  <p className="read-only-text">{currentUser}</p>
+                </div>
+
+                <div className="form-group">
+                  <label>Owner:</label>
+                  <p className="read-only-text">{currentUser}</p>
+                </div>
+
+                <div className="form-group">
+                  <label>Description:</label>
+                  <textarea name="description" value={taskForm.description} onChange={handleChange} rows="4"></textarea>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>App Acronym:</label>
-                <p className="read-only-text">{appAcronym}</p>
-              </div>
-
-              <div className="form-group">
-                <label>Plan:</label>
-                <Select options={planOptions} className="input-field" placeholder="Select plan" />
-              </div>
-
-              <div className="form-group">
-                <label>State:</label>
-                <p className="read-only-text">xxxxxx</p>
-              </div>
-
-              <div className="form-group">
-                <label>Creator:</label>
-                <p className="read-only-text">xxxx</p>
-              </div>
-
-              <div className="form-group">
-                <label>Owner:</label>
-                <p className="read-only-text">xxxx</p>
-              </div>
-
-              <div className="form-group">
-                <label>Description:</label>
-                <textarea className="textarea-field" placeholder="Enter description" rows="4"></textarea>
+              {/* Right Column - Notes */}
+              <div className="right-column">
+                <div className="form-group">
+                  <label>Add note:</label>
+                  <textarea onChange={handleChange} rows="6"></textarea>
+                </div>
               </div>
             </div>
 
-            {/* Right Column - Notes */}
-            <div className="right-column">
-              <div className="form-group">
-                <label>Notes:</label>
-                <textarea className="textarea-field" placeholder="Enter notes" rows="6" readOnly></textarea>
-              </div>
-
-              <div className="form-group">
-                <label>Add note:</label>
-                <textarea className="textarea-field" placeholder="Add a note" rows="6"></textarea>
-              </div>
+            {/* Button Group */}
+            <div className="button-group">
+              <button type="submit" className="save-button">
+                Save Changes
+              </button>
+              <button type="button" className="cancel-button" onClick={closeModal}>
+                Close
+              </button>
             </div>
-          </div>
-
-          {/* Button Group */}
-          <div className="button-group">
-            <button type="button" className="save-button" onClick={closeModal}>
-              Save Changes
-            </button>
-            <button type="button" className="cancel-button" onClick={closeModal}>
-              Close
-            </button>
-          </div>
+          </form>
         </div>
       </Modal>
     </div>

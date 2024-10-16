@@ -6,10 +6,10 @@ import "./PlansModal.css"
 
 Modal.setAppElement("#root")
 
-const PlansModal = ({ appInfo, isOpen, closeModal }) => {
+const PlansModal = ({ appInfo, plansInfo, fetchPlansInfo, isOpen, closeModal }) => {
   const today = new Date().toISOString().split("T")[0]
 
-  const [plansInfo, setPlansInfo] = useState([])
+  // const [plansInfo, setPlansInfo] = useState([])
   const [planForm, setPlanForm] = useState({
     appAcronym: appInfo?.app_acronym || "",
     planName: "",
@@ -18,17 +18,35 @@ const PlansModal = ({ appInfo, isOpen, closeModal }) => {
     colour: "#ffffff"
   })
 
-  const fetchPlansInfo = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/getPlansInfo", {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true
-      })
-      setPlansInfo(response.data.plans)
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  // const fetchPlansInfo = async () => {
+  //   try {
+  //     const response = await axios.get("http://localhost:5000/getPlansInfo", {
+  //       headers: { "Content-Type": "application/json" },
+  //       withCredentials: true
+  //     })
+  //     setPlansInfo(response.data.allPlansInfo)
+  //   } catch (err) {
+  //     console.error(err)
+  //   }
+  // }
+
+  // const fetchPlansInfo = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       "http://localhost:5000/getPlansInfo",
+  //       {
+  //         appAcronym: planForm.appAcronym
+  //       },
+  //       {
+  //         headers: { "Content-Type": "application/json" },
+  //         withCredentials: true
+  //       }
+  //     )
+  //     setPlansInfo(response.data.allPlansInfo)
+  //   } catch (err) {
+  //     console.error(err)
+  //   }
+  // }
 
   const handleChange = e => {
     const { name, value } = e.target

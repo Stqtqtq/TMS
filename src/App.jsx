@@ -51,7 +51,7 @@ function App() {
         <Route path="/profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
         <Route path="/tms" element={isAuthenticated ? <TMS /> : <Navigate to="/login" />} />
         <Route path="/ums" element={isAuthenticated ? isAdmin ? <UMS /> : <Navigate to="/" /> : <Navigate to="/login" />} />
-        <Route path="/app" element={<AppDashboard />} />
+        <Route path="/app" element={isAuthenticated ? <AppDashboard /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 const TMS = () => {
   const navigate = useNavigate()
 
+  const [currentUser, setCurrentUser] = useState(null)
   const [appsInfo, setAppsInfo] = useState([])
   const [groupOptions, setGroupOptions] = useState([])
 
@@ -16,6 +17,7 @@ const TMS = () => {
         headers: { "Content-Type": "application/json" },
         withCredentials: true
       })
+      setCurrentUser(response.data.currentUser)
       setAppsInfo(response.data.apps)
       setGroupOptions(
         response.data.groups.map(group => ({
@@ -34,7 +36,7 @@ const TMS = () => {
 
   const handleOpenApp = app => {
     // Navigate to the '/app' endpoint with the selected app data in the state
-    navigate("/app", { state: { app } })
+    navigate("/app", { state: { app, currentUser } })
   }
 
   return (
