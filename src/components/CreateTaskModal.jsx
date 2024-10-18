@@ -8,18 +8,14 @@ import { ToastContainer, toast } from "react-toastify"
 Modal.setAppElement("#root")
 
 const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, isOpen, closeModal }) => {
-  const today = new Date().toISOString().split("T")[0]
-
   const [taskForm, setTaskForm] = useState({
     appAcronym: appInfo?.app_acronym || "",
-    appRNumber: appInfo?.app_rnumber || "",
     taskName: "",
     planName: "",
     creator: currentUser,
     owner: currentUser,
     description: "",
-    notes: "",
-    createDate: today
+    notes: ""
   })
 
   const handleChange = e => {
@@ -54,14 +50,12 @@ const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, is
 
       setTaskForm({
         appAcronym: appInfo?.app_acronym || "",
-        appRNumber: appInfo?.app_rnumber || "",
         taskName: "",
         planName: null,
         creator: currentUser,
         owner: currentUser,
         description: "",
-        notes: "",
-        createDate: today
+        notes: ""
       })
 
       if (response.data.success) {
@@ -146,7 +140,7 @@ const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, is
               <div className="right-column">
                 <div className="form-group">
                   <label>Add note:</label>
-                  <textarea onChange={handleChange} rows="6"></textarea>
+                  <textarea name="notes" value={taskForm.notes} onChange={handleChange} rows="6"></textarea>
                 </div>
               </div>
             </div>
@@ -154,7 +148,7 @@ const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, is
             {/* Button Group */}
             <div className="button-group">
               <button type="submit" className="save-button">
-                Save Changes
+                Create Task
               </button>
               <button type="button" className="cancel-button" onClick={closeModal}>
                 Close

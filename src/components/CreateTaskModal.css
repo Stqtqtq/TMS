@@ -51,20 +51,29 @@ label {
 /* Button group styling */
 .button-group {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 10px;
-  /* margin-top: 20px; */
+  margin-top: 20px;
 }
-
+.promote-button,
+.demote-button,
 .save-button,
 .cancel-button {
   background-color: #333;
   color: white;
   padding: 10px 20px;
-  margin-right: 10px;
+  /* margin-right: 10px; */
+  margin: 0;
   border: none;
   cursor: pointer;
   font-size: 14px;
+}
+.promote-button {
+  background-color: green;
+}
+
+.demote-button {
+  background-color: red;
 }
 
 .close-button {

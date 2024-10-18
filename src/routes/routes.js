@@ -5,7 +5,7 @@ import { createGrp } from "../contoller/groupController.js"
 import { getAppsInfo, createApp } from "../contoller/appController.js"
 import { getPlansInfo, createPlan } from "../contoller/planController.js"
 import { getTasksInfo, createTask, updateTask } from "../contoller/taskController.js"
-import { authenticateToken, checkIsAdmin } from "../middleware/auth.js"
+import { authenticateToken, checkIsAdmin, checkUserGroup } from "../middleware/auth.js"
 
 const router = express.Router()
 
@@ -13,12 +13,12 @@ router.post("/login", login)
 router.post("/logout", logout)
 
 router.get("/landing", authenticateToken, checkIsAdmin, landing)
-router.get("/getAppsInfo", authenticateToken, getAppsInfo)
-router.post("/createApp", authenticateToken, createApp)
+router.get("/getAppsInfo", authenticateToken, checkUserGroup(["PL"]), getAppsInfo)
+router.post("/createApp", authenticateToken, checkUserGroup(["PL"]), createApp)
 
 // router.get("/getPlansInfo", authenticateToken, getPlansInfo)
-router.post("/getPlansInfo", authenticateToken, getPlansInfo)
-router.post("/createPlan", authenticateToken, createPlan)
+router.post("/getPlansInfo", authenticateToken, checkUserGroup(["PM"]), getPlansInfo)
+router.post("/createPlan", authenticateToken, checkUserGroup(["PM"]), createPlan)
 
 router.post("/getTasksInfo", authenticateToken, getTasksInfo)
 router.post("/createTask", authenticateToken, createTask)

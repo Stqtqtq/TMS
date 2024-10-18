@@ -31,7 +31,7 @@ export const getPlansInfo = async (req, res) => {
 
     const [allPlansInfo] = await db.execute(qPlanInfo, [appAcronym])
 
-    res.json({ plans: allPlansInfo })
+    res.json({ plans: allPlansInfo, isPM: req.isPM })
   } catch (err) {
     console.error("Error querying the database: ", err)
     res.status(500).send("Server error")
@@ -41,6 +41,10 @@ export const getPlansInfo = async (req, res) => {
 export const createPlan = async (req, res) => {
   // To add: only PL can create. Admin can only view, PM and dev cannot create but can go
   // into apps and view
+
+  if (!req.isPM) {
+    return res.status(403).json({ message: "Forbidden", success: false, isPM: req.isPM })
+  }
 
   const { appAcronym, planName, planStartDate, planEndDate, colour } = req.body
 

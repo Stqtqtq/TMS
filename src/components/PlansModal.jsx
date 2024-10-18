@@ -6,10 +6,9 @@ import "./PlansModal.css"
 
 Modal.setAppElement("#root")
 
-const PlansModal = ({ appInfo, plansInfo, fetchPlansInfo, isOpen, closeModal }) => {
+const PlansModal = ({ appInfo, isPM, plansInfo, fetchPlansInfo, isOpen, closeModal }) => {
   const today = new Date().toISOString().split("T")[0]
 
-  // const [plansInfo, setPlansInfo] = useState([])
   const [planForm, setPlanForm] = useState({
     appAcronym: appInfo?.app_acronym || "",
     planName: "",
@@ -17,36 +16,6 @@ const PlansModal = ({ appInfo, plansInfo, fetchPlansInfo, isOpen, closeModal }) 
     planEndDate: today,
     colour: "#ffffff"
   })
-
-  // const fetchPlansInfo = async () => {
-  //   try {
-  //     const response = await axios.get("http://localhost:5000/getPlansInfo", {
-  //       headers: { "Content-Type": "application/json" },
-  //       withCredentials: true
-  //     })
-  //     setPlansInfo(response.data.allPlansInfo)
-  //   } catch (err) {
-  //     console.error(err)
-  //   }
-  // }
-
-  // const fetchPlansInfo = async () => {
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:5000/getPlansInfo",
-  //       {
-  //         appAcronym: planForm.appAcronym
-  //       },
-  //       {
-  //         headers: { "Content-Type": "application/json" },
-  //         withCredentials: true
-  //       }
-  //     )
-  //     setPlansInfo(response.data.allPlansInfo)
-  //   } catch (err) {
-  //     console.error(err)
-  //   }
-  // }
 
   const handleChange = e => {
     const { name, value } = e.target
@@ -70,7 +39,6 @@ const PlansModal = ({ appInfo, plansInfo, fetchPlansInfo, isOpen, closeModal }) 
           withCredentials: true
         }
       )
-
       setPlanForm({
         appAcronym: appInfo?.app_acronym || "",
         planName: "",
@@ -124,40 +92,42 @@ const PlansModal = ({ appInfo, plansInfo, fetchPlansInfo, isOpen, closeModal }) 
           <button className="close-button" onClick={closeModal}>
             &times;
           </button>
-          <div className="createPlan-container">
-            <form onSubmit={handleSubmit}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Plan name:</th>
-                    <th>Start Date:</th>
-                    <th>End Date:</th>
-                    <th>Colour:</th>
-                    {/* <th>Active</th> */}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <input type="text" name="planName" value={planForm.planName} onChange={handleChange} />
-                    </td>
-                    <td>
-                      <input type="date" name="planStartDate" value={planForm.planStartDate} onChange={handleChange} />
-                    </td>
-                    <td>
-                      <input type="date" name="planEndDate" value={planForm.planEndDate} onChange={handleChange} />
-                    </td>
-                    <td>
-                      <input type="color" name="colour" value={planForm.colour} onChange={handleChange} />
-                    </td>
-                    <td>
-                      <button>Create</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </form>
-          </div>
+          {isPM ? (
+            <div className="createPlan-container">
+              <form onSubmit={handleSubmit}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Plan name:</th>
+                      <th>Start Date:</th>
+                      <th>End Date:</th>
+                      <th>Colour:</th>
+                      {/* <th>Active</th> */}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input type="text" name="planName" value={planForm.planName} onChange={handleChange} />
+                      </td>
+                      <td>
+                        <input type="date" name="planStartDate" value={planForm.planStartDate} onChange={handleChange} />
+                      </td>
+                      <td>
+                        <input type="date" name="planEndDate" value={planForm.planEndDate} onChange={handleChange} />
+                      </td>
+                      <td>
+                        <input type="color" name="colour" value={planForm.colour} onChange={handleChange} />
+                      </td>
+                      <td>
+                        <button>Create</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </form>
+            </div>
+          ) : null}
 
           <div className="plansInfo-container">
             <table>

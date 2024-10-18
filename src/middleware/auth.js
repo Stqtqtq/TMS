@@ -36,6 +36,36 @@ export const checkIsAdmin = async (req, res, next) => {
   }
 }
 
+// export const checkUserGroup = group => {
+//   return async (req, res, next) => {
+//     const username = req.user.username
+
+//     try {
+//       req[`is${group}`] = await checkGrp(username, group)
+//       next()
+//     } catch (err) {
+//       console.error("Error checking admin status:", err)
+//       return res.status(500).send("Server error")
+//     }
+//   }
+// }
+
+export const checkUserGroup = groups => {
+  return async (req, res, next) => {
+    const username = req.user.username
+
+    try {
+      for (let group of groups) {
+        req[`is${group}`] = await checkGrp(username, group)
+      }
+      next()
+    } catch (err) {
+      console.error("Error checking admin status:", err)
+      return res.status(500).send("Server error")
+    }
+  }
+}
+
 export const checkGrp = async (username, group) => {
   try {
     const [rows] = await db.execute("SELECT * FROM user_groups WHERE username = ? AND groupname = ?", [username, group])
@@ -45,3 +75,17 @@ export const checkGrp = async (username, group) => {
     throw new Error("Server error")
   }
 }
+
+// Does pattern matching; PL1 is also considered PL
+// export const checkGrp = async (username, group) => {
+//   try {
+//     const [rows] = await db.execute(
+//       "SELECT * FROM user_groups WHERE username = ? AND groupname LIKE ?",
+//       [username, `${group}%`]
+//     )
+//     return rows.length > 0
+//   } catch (err) {
+//     console.error("Error connecting to database:", err)
+//     throw new Error("Server error")
+//   }
+// }

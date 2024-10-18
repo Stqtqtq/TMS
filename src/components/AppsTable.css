@@ -1,6 +1,6 @@
 .appsTable-container {
   display: flex;
-
+  margin-top: 100px;
   table {
     border-collapse: separate;
     border-spacing: 5px 5px;

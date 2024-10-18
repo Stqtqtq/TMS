@@ -7,16 +7,20 @@ export const getAppsInfo = async (req, res) => {
   // To add: only PL can create. Admin can only view, PM and dev cannot create but can go
   // into apps and view
 
+  const currentUser = req.user.username
+
   try {
     // Get distinct groups for dropdown to create App
     const qDistGrp = `SELECT distinct(groupname) FROM user_groups`
     // fetch all info from the App table to display
     const qAllApps = `SELECT * FROM application`
 
+    const qUserGroup = `SELECT groupname FROM user_groups WHERE username = ?`
+    const [userGroupRow] = await db.execute(qUserGroup, [currentUser])
+
     const [distGrpRows] = await db.execute(qDistGrp)
     const [allAppsInfo] = await db.execute(qAllApps)
-    console.log(req.user)
-    res.json({ apps: allAppsInfo, groups: distGrpRows, currentUser: req.user.username })
+    res.json({ apps: allAppsInfo, groups: distGrpRows, currentUser, isPL: req.isPL })
   } catch (err) {
     console.error("Error querying the database: ", err)
     res.status(500).send("Server error")
@@ -29,6 +33,10 @@ export const createApp = async (req, res) => {
 
   // Might need to do conditional checks for groups on create, todo, doing, done
   // Check how to implement requirements for permits
+
+  if (!req.isPL) {
+    return res.status(403).json({ message: "Forbidden", success: false, isPL: req.isPL })
+  }
 
   const { appAcronym, appStartDate, appEndDate, appCreate, appOpen, appTodo, appDoing, appDone, description } = req.body
   if (appAcronym === "" || null) {

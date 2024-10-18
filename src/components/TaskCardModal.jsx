@@ -4,15 +4,52 @@ import Modal from "react-modal"
 import Select from "react-select"
 import { ToastContainer, toast } from "react-toastify"
 import "./TaskCardModal.css"
+import { render } from "react-dom"
 
 Modal.setAppElement("#root")
 
-const TaskCardModal = ({ appInfo, plansInfo, task, planOptions, fetchTasksInfo, isOpen, closeModal }) => {
+const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions, fetchTasksInfo, isOpen, closeModal }) => {
   const [taskForm, setTaskForm] = useState({
+    permitDone: appInfo.app_permit_done,
     taskId: task.task_id,
     planName: task.task_plan,
-    notes: ""
+    taskState: task.task_state,
+    notes: "", // For input of notes
+    updatedNotes: task.task_notes // For read-only notes
   })
+
+  const buttonConfig = {
+    Open: [
+      { action: "promote", class: "promote", label: "Save and Release", permission: "app_permit_open" },
+      { action: null, class: "save", label: "Save Changes", permission: "app_permit_open" }
+    ],
+    Todo: [
+      { action: "promote", class: "promote", label: "Save and Pickup", permission: "app_permit_todolist" },
+      { action: null, class: "save", label: "Save Changes", permission: "app_permit_todolist" }
+    ],
+    Doing: [
+      { action: "promote", class: "promote", label: "Save and Giveup", permission: "app_permit_doing" },
+      { action: "demote", class: "demote", label: "Save and Seek Approval", permission: "app_permit_doing" },
+      { action: null, class: "save", label: "Save Changes", permission: "app_permit_doing" }
+    ],
+    Done: [
+      { action: "promote", class: "promote", label: "Save and Approve", permission: "app_permit_done" },
+      { action: "demote", class: "demote", label: "Save and Reject", permission: "app_permit_done" },
+      { action: null, class: "save", label: "Save Changes", permission: "app_permit_done" }
+    ]
+  }
+
+  const renderButtons = () => {
+    const stateButtons = buttonConfig[taskForm.taskState] || []
+    console.log(stateButtons)
+    return stateButtons
+      .filter(button => taskPermissions.permissionStatus?.[button.permission])
+      .map(button => (
+        <button type="submit" className={`${button.class}-button`} onClick={e => handleSubmit(e, button.action)}>
+          {button.label}
+        </button>
+      ))
+  }
 
   const handleChange = e => {
     const { name, value } = e.target
@@ -29,14 +66,15 @@ const TaskCardModal = ({ appInfo, plansInfo, task, planOptions, fetchTasksInfo, 
     })
   }
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e, action = null) => {
     e.preventDefault()
 
     try {
       const response = await axios.put(
         "http://localhost:5000/updateTask",
         {
-          ...taskForm
+          ...taskForm,
+          action
         },
         {
           headers: { "Content-Type": "application/json" },
@@ -44,12 +82,20 @@ const TaskCardModal = ({ appInfo, plansInfo, task, planOptions, fetchTasksInfo, 
         }
       )
 
-      setTaskForm({
-        planName: null,
-        notes: ""
-      })
+      // setTaskForm({
+      //   planName: null,
+      //   notes: ""
+      // })
 
       if (response.data.success) {
+        // Update taskState after promotion/demotion
+        setTaskForm(prevForm => ({
+          ...prevForm,
+          taskState: response.data.newState, // assuming the backend sends the new state as 'newState'
+          notes: "", // reset notes after save
+          updatedNotes: response.data.updatedNotes
+        }))
+
         toast.success(response.data.message, {
           position: "top-center",
           autoClose: 150,
@@ -80,12 +126,18 @@ const TaskCardModal = ({ appInfo, plansInfo, task, planOptions, fetchTasksInfo, 
   useEffect(() => {
     if (task) {
       setTaskForm({
+        permitDone: appInfo.app_permit_done,
         taskId: task.task_id,
         planName: task.task_plan || "",
-        notes: ""
+        taskState: task.task_state,
+        notes: "",
+        updatedNotes: task.task_notes
       })
     }
   }, [task, isOpen])
+
+  // Determine if the plan field should be a Select or read-only p tag
+  const isPlanEditable = taskForm.taskState === "Open" || taskForm.taskState === "Done"
 
   return (
     <div id="root" className="modal-container">
@@ -112,13 +164,14 @@ const TaskCardModal = ({ appInfo, plansInfo, task, planOptions, fetchTasksInfo, 
 
                 <div className="form-group">
                   <label>Plan:</label>
+                  {isPlanEditable ? <Select name="planName" closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} /> : <p className="read-only-text">{taskForm.planName}</p>}
                   {/* <Select options={planOptions} className="input-field" placeholder="Select plan" /> */}
-                  <Select name="planName" closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} />
+                  {/* <Select name="planName" closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} /> */}
                 </div>
 
                 <div className="form-group">
                   <label>State:</label>
-                  <p className="read-only-text">{task.task_state}</p>
+                  <p className="read-only-text">{taskForm.taskState}</p>
                 </div>
 
                 <div className="form-group">
@@ -138,7 +191,8 @@ const TaskCardModal = ({ appInfo, plansInfo, task, planOptions, fetchTasksInfo, 
 
                 <div className="form-group">
                   <label>Description:</label>
-                  <textarea className="textarea-field" value={task.task_description} rows="4" readOnly></textarea>
+                  {/* <textarea className="textarea-field" value={task.task_description} rows="4" readOnly></textarea> */}
+                  <pre>{task.task_description}</pre>
                 </div>
               </div>
 
@@ -146,27 +200,28 @@ const TaskCardModal = ({ appInfo, plansInfo, task, planOptions, fetchTasksInfo, 
               <div className="right-column">
                 <div className="form-group">
                   <label>Notes:</label>
-                  <textarea className="textarea-field" value={task.task_notes} rows="6" readOnly></textarea>
+                  <textarea className="textarea-field" value={taskForm.updatedNotes} rows="6" readOnly></textarea>
                 </div>
 
                 <div className="form-group">
                   <label>Add note:</label>
-                  <textarea className="textarea-field" placeholder="Add a note" rows="6" onChange={handleChange}></textarea>
+                  <textarea className="textarea-field" name="notes" value={taskForm.notes} placeholder="Add a note" rows="6" onChange={handleChange}></textarea>
                 </div>
               </div>
             </div>
 
             {/* Button Group */}
             <div className="button-group">
-              <button type="submit" className="promote-button">
+              {/* <button type="submit" className="promote-button" onClick={e => handleSubmit(e, "promote")}>
                 Save and Promote
               </button>
-              <button type="submit" className="demote-button">
+              <button type="submit" className="demote-button" onClick={e => handleSubmit(e, "demote")}>
                 Save and Demote
-              </button>
-              <button type="submit" className="save-button">
+              </button> */}
+              {renderButtons()}
+              {/* <button type="submit" className="save-button" onClick={e => handleSubmit(e)}>
                 Save Changes
-              </button>
+              </button> */}
               <button type="button" className="cancel-button" onClick={closeModal}>
                 Close
               </button>

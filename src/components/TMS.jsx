@@ -10,6 +10,7 @@ const TMS = () => {
   const [currentUser, setCurrentUser] = useState(null)
   const [appsInfo, setAppsInfo] = useState([])
   const [groupOptions, setGroupOptions] = useState([])
+  const [isPL, setIsPL] = useState(false)
 
   const fetchAppsInfo = async () => {
     try {
@@ -18,6 +19,7 @@ const TMS = () => {
         withCredentials: true
       })
       setCurrentUser(response.data.currentUser)
+      setIsPL(response.data.isPL)
       setAppsInfo(response.data.apps)
       setGroupOptions(
         response.data.groups.map(group => ({
@@ -27,6 +29,7 @@ const TMS = () => {
       )
     } catch (err) {
       console.error(err)
+      // Set proper error response here and set all values back to default
     }
   }
 
@@ -41,7 +44,7 @@ const TMS = () => {
 
   return (
     <div>
-      <CreateApp groupOptions={groupOptions} fetchAppsInfo={fetchAppsInfo} />
+      {isPL && <CreateApp groupOptions={groupOptions} fetchAppsInfo={fetchAppsInfo} />}
       <AppsTable appsInfo={appsInfo} handleOpenApp={handleOpenApp} />
     </div>
   )

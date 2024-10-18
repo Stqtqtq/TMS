@@ -23,7 +23,9 @@ const AppDashboard = () => {
   const [plansInfo, setPlansInfo] = useState([])
   const [planOptions, setPlanOptions] = useState([])
   const [tasksInfo, setTasksInfo] = useState([])
+  const [taskPermissions, setTaskPermissions] = useState({})
   const [selectedTask, setSelectedTask] = useState([])
+  const [isPM, setIsPM] = useState(false)
 
   const fetchPlansInfo = async () => {
     try {
@@ -37,6 +39,7 @@ const AppDashboard = () => {
           withCredentials: true
         }
       )
+      setIsPM(response.data.isPM)
       setPlansInfo(response.data.plans)
       setPlanOptions(
         response.data.plans.map(plan => ({
@@ -62,6 +65,7 @@ const AppDashboard = () => {
         }
       )
       setTasksInfo(response.data.tasks)
+      setTaskPermissions(response.data.permissions)
     } catch (err) {
       console.error(err)
     }
@@ -105,12 +109,13 @@ const AppDashboard = () => {
     setTaskCardModalIsOpen(false)
   }
 
+  // console.log(taskPermissions.permissionStatus.app_permit_create)
   return (
     <div className="kanban-container">
       <AppInfoModal appInfo={app} isOpen={appInfoModalIsOpen} closeModal={closeAppDetailModal} />
       <CreateTaskModal currentUser={currentUser} appInfo={app} planOptions={planOptions} fetchTasksInfo={fetchTasksInfo} isOpen={createTaskModalIsOpen} closeModal={closeCreateTaskModal} />
-      <PlansModal appInfo={app} plansInfo={plansInfo} fetchPlansInfo={fetchPlansInfo} isOpen={plansModalIsOpen} closeModal={closePlansModal} />
-      <TaskCardModal appInfo={app} plansInfo={plansInfo} task={selectedTask} planOptions={planOptions} fetchTasksInfo={fetchTasksInfo} isOpen={taskCardModalIsOpen} closeModal={closeTaskCardModal} />
+      <PlansModal appInfo={app} isPM={isPM} plansInfo={plansInfo} fetchPlansInfo={fetchPlansInfo} isOpen={plansModalIsOpen} closeModal={closePlansModal} />
+      <TaskCardModal taskPermissions={taskPermissions} appInfo={app} plansInfo={plansInfo} task={selectedTask} planOptions={planOptions} fetchTasksInfo={fetchTasksInfo} isOpen={taskCardModalIsOpen} closeModal={closeTaskCardModal} />
 
       <div className="kanban-header">
         <div className="left-header-group">
@@ -123,9 +128,11 @@ const AppDashboard = () => {
           <button className="appInfo-buttons" onClick={openPlansModal}>
             Plans
           </button>
-          <button className="appInfo-buttons" onClick={openCreateTaskModal}>
-            Create Task
-          </button>
+          {taskPermissions.permissionStatus?.app_permit_create && (
+            <button className="appInfo-buttons" onClick={openCreateTaskModal}>
+              Create Task
+            </button>
+          )}
         </div>
       </div>
 
@@ -143,33 +150,37 @@ const AppDashboard = () => {
           <h2 className="column-title">Todo</h2>
           {tasksInfo
             .filter(task => task.task_state === "Todo")
-            .map(task => (
-              <TaskCard key={task.task_id} task={task} onClick={openTaskCardModal} />
-            ))}
+            .map(task => {
+              const matchingPlan = plansInfo.find(plan => plan.plan_mvp_name === task.task_plan)
+              return <TaskCard key={task.task_id} task={task} plan={matchingPlan} onClick={() => openTaskCardModal(task)} />
+            })}
         </div>
         <div className="kanban-column">
           <h2 className="column-title">Doing</h2>
           {tasksInfo
             .filter(task => task.task_state === "Doing")
-            .map(task => (
-              <TaskCard key={task.task_id} task={task} onClick={openTaskCardModal} />
-            ))}
+            .map(task => {
+              const matchingPlan = plansInfo.find(plan => plan.plan_mvp_name === task.task_plan)
+              return <TaskCard key={task.task_id} task={task} plan={matchingPlan} onClick={() => openTaskCardModal(task)} />
+            })}
         </div>
         <div className="kanban-column">
           <h2 className="column-title">Done</h2>
           {tasksInfo
             .filter(task => task.task_state === "Done")
-            .map(task => (
-              <TaskCard key={task.task_id} task={task} onClick={openTaskCardModal} />
-            ))}
+            .map(task => {
+              const matchingPlan = plansInfo.find(plan => plan.plan_mvp_name === task.task_plan)
+              return <TaskCard key={task.task_id} task={task} plan={matchingPlan} onClick={() => openTaskCardModal(task)} />
+            })}
         </div>
         <div className="kanban-column">
           <h2 className="column-title">Closed</h2>
           {tasksInfo
-            .filter(task => task.task_state === "Closed")
-            .map(task => (
-              <TaskCard key={task.task_id} task={task} onClick={openTaskCardModal} />
-            ))}
+            .filter(task => task.task_state === "Close")
+            .map(task => {
+              const matchingPlan = plansInfo.find(plan => plan.plan_mvp_name === task.task_plan)
+              return <TaskCard key={task.task_id} task={task} plan={matchingPlan} onClick={() => openTaskCardModal(task)} />
+            })}
         </div>
       </div>
     </div>
