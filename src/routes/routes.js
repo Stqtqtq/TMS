@@ -16,7 +16,6 @@ router.get("/landing", authenticateToken, checkIsAdmin, landing)
 router.get("/getAppsInfo", authenticateToken, checkUserGroup(["PL"]), getAppsInfo)
 router.post("/createApp", authenticateToken, checkUserGroup(["PL"]), createApp)
 
-// router.get("/getPlansInfo", authenticateToken, getPlansInfo)
 router.post("/getPlansInfo", authenticateToken, checkUserGroup(["PM"]), getPlansInfo)
 router.post("/createPlan", authenticateToken, checkUserGroup(["PM"]), createPlan)
 

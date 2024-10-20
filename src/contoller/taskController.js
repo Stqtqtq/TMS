@@ -4,9 +4,6 @@ import { transporter } from "../utils/mailer.js"
 const taskNameRegex = /^[a-zA-Z0-9_]+$/
 
 export const getTasksInfo = async (req, res) => {
-  // To add: only PL can create. Admin can only view, PM and dev cannot create but can go
-  // into apps and view
-
   const { appAcronym } = req.body
   const currentUser = req.user.username
 
@@ -38,7 +35,6 @@ export const createTask = async (req, res) => {
   // Prepare the formatted note entry
   const formattedNote = `[${currentUser}, ${timestamp}]\n${notes}`
 
-  // Check for app acronym and rnumber?
   if (!taskName) {
     return res.status(400).json({ message: "Invalid task name", success: false })
   }
@@ -60,7 +56,6 @@ export const createTask = async (req, res) => {
       return res.status(409).json({ message: "Task already exists.", success: false })
     }
 
-    // regex check for task name
     if (!taskNameRegex.test(taskName)) {
       return res.status(400).json({ message: "Invalid task name. It must be alphanumeric.", success: false })
     }
@@ -99,9 +94,6 @@ export const createTask = async (req, res) => {
 }
 
 export const updateTask = async (req, res) => {
-  // NEED TO UPDATE OWNER ALSO AS THE CURRENT USER SINCE ITS BASED ON LAST TOUCH
-
-  // If able to use promoteTask and demoteTask, then no need update state again here
   const { permitDone, taskId, planName, taskState, notes, updatedNotes, action } = req.body
   const currentUser = req.user.username
 
@@ -127,34 +119,34 @@ export const updateTask = async (req, res) => {
     Close: null
   }
 
-  let newState = taskState
+  let state = taskState
 
   try {
     if (action === "promote") {
       if (!nextState[taskState]) {
         return res.status(400).json({ message: "Task cannot be promoted", success: false })
       }
-      newState = nextState[taskState]
+      state = nextState[taskState]
     } else if (action === "demote") {
       if (!prevState[taskState]) {
         return res.status(400).json({ message: "Task cannot be demoted", success: false })
       }
-      newState = prevState[taskState]
+      state = prevState[taskState]
     }
 
-    // Do I need to update taskowner here again after promote and demote?
     const qUpdateTask = `UPDATE task SET task_plan = ?, task_notes = CONCAT(?, task_notes), task_owner = ?, task_state = ? WHERE task_id = ?`
-    const [updatedTask] = await db.execute(qUpdateTask, [planName, formattedNote, currentUser, newState, taskId])
+    const [updatedTask] = await db.execute(qUpdateTask, [planName, formattedNote, currentUser, state, taskId])
 
     if (updatedTask.affectedRows === 0) {
       return res.status(500).json({ message: "Task not found", success: false })
     }
 
     // Fetch the updated task to include the new notes
-    const qGetUpdatedNotes = `SELECT task_notes FROM task WHERE task_id = ?`
-    const [updatedNotesRow] = await db.execute(qGetUpdatedNotes, [taskId])
+    const qGetUpdatedTask = `SELECT task_owner, task_notes FROM task WHERE task_id = ?`
+    const [updatedTaskRow] = await db.execute(qGetUpdatedTask, [taskId])
 
-    if (newState === "Doing") {
+    // Check if updating from 'Doing' -> 'Done' state. If yes, send email
+    if (state === "Doing") {
       const qMailRecipients = `SELECT username FROM user_groups WHERE groupname = ?`
       const [qMailRecipientsRow] = await db.execute(qMailRecipients, [permitDone])
 
@@ -173,7 +165,7 @@ export const updateTask = async (req, res) => {
       }
 
       const emailList = recipients.join(",")
-      console.log(emailList)
+      // console.log(emailList)
 
       const mailContent = {
         from: "TMS <noreply@tms.com>",
@@ -189,37 +181,17 @@ export const updateTask = async (req, res) => {
       })
     }
 
-    return res.status(201).json({ message: "Task saved", newState, updatedNotes: updatedNotesRow[0].task_notes, success: true })
+    return res.status(201).json({ message: "Task saved", state, taskOwner: updatedTaskRow[0].task_owner, updatedNotes: updatedTaskRow[0].task_notes, success: true })
   } catch (err) {
     console.error("Error querying the database: ", err)
     res.status(500).json({ message: "An error occured while updating the task.", success: false })
   }
 }
 
-// export const checkPermission = async (username, permittedGroup) => {
-//   try {
-//     query = `SELECT groupname FROM user_groups WHERE username = ?`
-//     const [rows] = await db.execute(query, [username])
-
-//     return rows.some(group => group.groupname === permittedGroup)
-//   } catch (err) {
-//     console.error("Error connecting to database:", err)
-//     throw new Error("Server error")
-//   }
-// }
-
 export const getUserAppPermissions = async (username, appAcronym) => {
   try {
     // Query to get all permission fields for the specific app
-    const qPermissions = `
-      SELECT 
-        app_permit_create, 
-        app_permit_open, 
-        app_permit_todolist, 
-        app_permit_doing, 
-        app_permit_done 
-      FROM application 
-      WHERE app_acronym = ?`
+    const qPermissions = `SELECT app_permit_create, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done FROM application WHERE app_acronym = ?`
 
     const [permissions] = await db.execute(qPermissions, [appAcronym])
 
@@ -235,11 +207,10 @@ export const getUserAppPermissions = async (username, appAcronym) => {
     // Loop over each permission type and check if the user belongs to the required group
     for (const [key, permittedGroup] of Object.entries(permittedGroups)) {
       if (permittedGroup) {
-        // Use the existing logic of `checkPermission` but inline it here to simplify the flow
         const qCheckUserGroup = `SELECT groupname FROM user_groups WHERE username = ? AND groupname = ?`
         const [rows] = await db.execute(qCheckUserGroup, [username, permittedGroup])
 
-        // Save whether the user has the permission or not
+        // Save true/false for each permission type that the current user have
         permissionStatus[key] = rows.length > 0
       }
     }

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import CreateApp from "./CreateApp.jsx"
 import AppsTable from "./AppsTable.jsx"
-import { useNavigate } from "react-router-dom"
 
 const TMS = () => {
   const navigate = useNavigate()
@@ -29,7 +29,6 @@ const TMS = () => {
       )
     } catch (err) {
       console.error(err)
-      // Set proper error response here and set all values back to default
     }
   }
 

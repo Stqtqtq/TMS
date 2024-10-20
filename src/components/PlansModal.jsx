@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
-import axios from "axios"
 import { ToastContainer, toast } from "react-toastify"
+import axios from "axios"
 import Modal from "react-modal"
 import "./PlansModal.css"
 
@@ -59,9 +59,7 @@ const PlansModal = ({ appInfo, isPM, plansInfo, fetchPlansInfo, isOpen, closeMod
         })
       }
     } catch (err) {
-      // if (err.response.data.isAdmin === false || err.response.status === 401) {
-      //   window.location.reload()
-      // }
+      console.error(err)
       toast.error(err.response.data.message, {
         position: "top-center",
         autoClose: 2000,

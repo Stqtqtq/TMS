@@ -1,3 +1,16 @@
 pre {
   margin: 0;
 }
+
+/* Increase the size of the "Notes" form group */
+.form-group.notes {
+  flex: 2; /* Adjust this value as needed to increase the size */
+  display: flex;
+  /* flex-direction: column; */
+}
+
+.notes-group .textarea-field {
+  height: 150px; /* Adjust the height as needed */
+  width: 100%;
+  resize: vertical; /* Allow the user to resize vertically */
+}

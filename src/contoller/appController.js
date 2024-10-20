@@ -1,12 +1,8 @@
 import { db } from "../utils/db.js"
 
-// Add regex for App Acronym alphanumeric
 const appAcronymRegex = /^[a-zA-Z0-9_]+$/
 
 export const getAppsInfo = async (req, res) => {
-  // To add: only PL can create. Admin can only view, PM and dev cannot create but can go
-  // into apps and view
-
   const currentUser = req.user.username
 
   try {
@@ -15,8 +11,8 @@ export const getAppsInfo = async (req, res) => {
     // fetch all info from the App table to display
     const qAllApps = `SELECT * FROM application`
 
-    const qUserGroup = `SELECT groupname FROM user_groups WHERE username = ?`
-    const [userGroupRow] = await db.execute(qUserGroup, [currentUser])
+    // const qUserGroup = `SELECT groupname FROM user_groups WHERE username = ?`
+    // const [userGroupRow] = await db.execute(qUserGroup, [currentUser])
 
     const [distGrpRows] = await db.execute(qDistGrp)
     const [allAppsInfo] = await db.execute(qAllApps)
@@ -28,12 +24,6 @@ export const getAppsInfo = async (req, res) => {
 }
 
 export const createApp = async (req, res) => {
-  // To add: only PL can create. Admin can only view, PM and dev cannot create but can go
-  // into apps and view
-
-  // Might need to do conditional checks for groups on create, todo, doing, done
-  // Check how to implement requirements for permits
-
   if (!req.isPL) {
     return res.status(403).json({ message: "Forbidden", success: false, isPL: req.isPL })
   }
@@ -61,7 +51,6 @@ export const createApp = async (req, res) => {
       return res.status(409).json({ message: "App acronym already exists.", success: false })
     }
 
-    // regex check for app acronym
     if (!appAcronymRegex.test(appAcronym)) {
       return res.status(400).json({ message: "Invalid App acronym. It must be alphanumeric.", success: false })
     }
