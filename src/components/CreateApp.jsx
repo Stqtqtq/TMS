@@ -1,8 +1,8 @@
 import React, { useState } from "react"
+import { ToastContainer, toast } from "react-toastify"
 import axios from "axios"
 import Select from "react-select"
 import "./CreateApp.css"
-import { ToastContainer, toast } from "react-toastify"
 
 const CreateApp = ({ groupOptions, fetchAppsInfo }) => {
   const today = new Date().toISOString().split("T")[0]
@@ -73,9 +73,7 @@ const CreateApp = ({ groupOptions, fetchAppsInfo }) => {
         })
       }
     } catch (err) {
-      // if (err.response.data.isAdmin === false || err.response.status === 401) {
-      //   window.location.reload()
-      // }
+      console.error(err)
       toast.error(err.response.data.message, {
         position: "top-center",
         autoClose: 2000,
@@ -111,7 +109,7 @@ const CreateApp = ({ groupOptions, fetchAppsInfo }) => {
               <td>
                 <input type="text" name="appAcronym" value={appForm.appAcronym} onChange={handleChange} />
               </td>
-              <td>{/* <input type="text" placeholder="xxx" /> */}</td>
+              <td></td>
               <td>
                 <input type="date" name="appStartDate" value={appForm.appStartDate} min={today} onChange={handleChange} />
               </td>

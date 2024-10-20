@@ -1,9 +1,9 @@
 import React, { useState } from "react"
+import { ToastContainer, toast } from "react-toastify"
 import axios from "axios"
 import Modal from "react-modal"
 import Select from "react-select"
 import "./CreateTaskModal.css"
-import { ToastContainer, toast } from "react-toastify"
 
 Modal.setAppElement("#root")
 
@@ -70,9 +70,7 @@ const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, is
         })
       }
     } catch (err) {
-      // if (err.response.data.isAdmin === false || err.response.status === 401) {
-      //   window.location.reload()
-      // }
+      console.error(err)
       toast.error(err.response.data.message, {
         position: "top-center",
         autoClose: 2000,
@@ -138,9 +136,9 @@ const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, is
 
               {/* Right Column - Notes */}
               <div className="right-column">
-                <div className="form-group">
+                <div className="form-group notes">
                   <label>Add note:</label>
-                  <textarea name="notes" value={taskForm.notes} onChange={handleChange} rows="6"></textarea>
+                  <textarea className="textarea-field" name="notes" value={taskForm.notes} onChange={handleChange} rows="24"></textarea>
                 </div>
               </div>
             </div>

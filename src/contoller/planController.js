@@ -1,29 +1,8 @@
 import { db } from "../utils/db.js"
 
-// Add regex for plan name, colour??
 const planNameRegex = /^[a-zA-Z0-9_]+$/
 
-// export const getPlansInfo = async (req, res) => {
-//   // To add: only PL can create. Admin can only view, PM and dev cannot create but can go
-//   // into apps and view
-
-//   try {
-//     const qAllPlan = `SELECT plan_mvp_name FROM plan`
-//     const qAllPlansInfo = `SELECT * FROM plan`
-
-//     const [allPlans] = await db.execute(qAllPlan)
-//     const [allPlansInfo] = await db.execute(qAllPlansInfo)
-
-//     res.json({ plans: allPlans, allPlansInfo: allPlansInfo })
-//   } catch (err) {
-//     console.error("Error querying the database: ", err)
-//     res.status(500).send("Server error")
-//   }
-// }
-
 export const getPlansInfo = async (req, res) => {
-  // To add: only PL can create. Admin can only view, PM and dev cannot create but can go
-  // into apps and view
   const { appAcronym } = req.body
 
   try {
@@ -39,9 +18,6 @@ export const getPlansInfo = async (req, res) => {
 }
 
 export const createPlan = async (req, res) => {
-  // To add: only PL can create. Admin can only view, PM and dev cannot create but can go
-  // into apps and view
-
   if (!req.isPM) {
     return res.status(403).json({ message: "Forbidden", success: false, isPM: req.isPM })
   }
@@ -66,7 +42,6 @@ export const createPlan = async (req, res) => {
       return res.status(409).json({ message: "Plan already exists.", success: false })
     }
 
-    // regex check for plan name
     if (!planNameRegex.test(planName)) {
       return res.status(400).json({ message: "Invalid plan name. It must be alphanumeric.", success: false })
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
-import axios from "axios"
 import { useLocation } from "react-router-dom"
+import axios from "axios"
 import TaskCard from "./TaskCard.jsx"
 import AppInfoModal from "./AppInfoModal.jsx"
 import CreateTaskModal from "./CreateTaskModal.jsx"
@@ -39,8 +39,8 @@ const AppDashboard = () => {
           withCredentials: true
         }
       )
-      setIsPM(response.data.isPM)
       setPlansInfo(response.data.plans)
+      setIsPM(response.data.isPM)
       setPlanOptions(
         response.data.plans.map(plan => ({
           value: plan.plan_mvp_name,
@@ -109,13 +109,12 @@ const AppDashboard = () => {
     setTaskCardModalIsOpen(false)
   }
 
-  // console.log(taskPermissions.permissionStatus.app_permit_create)
   return (
     <div className="kanban-container">
       <AppInfoModal appInfo={app} isOpen={appInfoModalIsOpen} closeModal={closeAppDetailModal} />
       <CreateTaskModal currentUser={currentUser} appInfo={app} planOptions={planOptions} fetchTasksInfo={fetchTasksInfo} isOpen={createTaskModalIsOpen} closeModal={closeCreateTaskModal} />
       <PlansModal appInfo={app} isPM={isPM} plansInfo={plansInfo} fetchPlansInfo={fetchPlansInfo} isOpen={plansModalIsOpen} closeModal={closePlansModal} />
-      <TaskCardModal taskPermissions={taskPermissions} appInfo={app} plansInfo={plansInfo} task={selectedTask} planOptions={planOptions} fetchTasksInfo={fetchTasksInfo} isOpen={taskCardModalIsOpen} closeModal={closeTaskCardModal} />
+      <TaskCardModal taskPermissions={taskPermissions} appInfo={app} task={selectedTask} planOptions={planOptions} fetchTasksInfo={fetchTasksInfo} isOpen={taskCardModalIsOpen} closeModal={closeTaskCardModal} />
 
       <div className="kanban-header">
         <div className="left-header-group">

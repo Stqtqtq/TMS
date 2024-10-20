@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from "react"
+import { ToastContainer, toast } from "react-toastify"
 import axios from "axios"
 import Modal from "react-modal"
 import Select from "react-select"
-import { ToastContainer, toast } from "react-toastify"
 import "./TaskCardModal.css"
-import { render } from "react-dom"
 
 Modal.setAppElement("#root")
 
-const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions, fetchTasksInfo, isOpen, closeModal }) => {
+const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasksInfo, isOpen, closeModal }) => {
   const [taskForm, setTaskForm] = useState({
     permitDone: appInfo.app_permit_done,
     taskId: task.task_id,
     planName: task.task_plan,
     taskState: task.task_state,
+    owner: task.task_owner,
     notes: "", // For input of notes
     updatedNotes: task.task_notes // For read-only notes
   })
@@ -28,8 +28,8 @@ const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions,
       { action: null, class: "save", label: "Save Changes", permission: "app_permit_todolist" }
     ],
     Doing: [
-      { action: "promote", class: "promote", label: "Save and Giveup", permission: "app_permit_doing" },
-      { action: "demote", class: "demote", label: "Save and Seek Approval", permission: "app_permit_doing" },
+      { action: "promote", class: "promote", label: "Save and Seek Approval", permission: "app_permit_doing" },
+      { action: "demote", class: "demote", label: "Save and Giveup", permission: "app_permit_doing" },
       { action: null, class: "save", label: "Save Changes", permission: "app_permit_doing" }
     ],
     Done: [
@@ -82,17 +82,12 @@ const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions,
         }
       )
 
-      // setTaskForm({
-      //   planName: null,
-      //   notes: ""
-      // })
-
       if (response.data.success) {
-        // Update taskState after promotion/demotion
         setTaskForm(prevForm => ({
           ...prevForm,
-          taskState: response.data.newState, // assuming the backend sends the new state as 'newState'
-          notes: "", // reset notes after save
+          taskState: response.data.state,
+          owner: response.data.taskOwner,
+          notes: "",
           updatedNotes: response.data.updatedNotes
         }))
 
@@ -107,9 +102,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions,
         })
       }
     } catch (err) {
-      // if (err.response.data.isAdmin === false || err.response.status === 401) {
-      //   window.location.reload()
-      // }
+      console.error(err)
       toast.error(err.response.data.message, {
         position: "top-center",
         autoClose: 2000,
@@ -130,6 +123,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions,
         taskId: task.task_id,
         planName: task.task_plan || "",
         taskState: task.task_state,
+        owner: task.task_owner,
         notes: "",
         updatedNotes: task.task_notes
       })
@@ -165,7 +159,6 @@ const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions,
                 <div className="form-group">
                   <label>Plan:</label>
                   {isPlanEditable ? <Select name="planName" closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} /> : <p className="read-only-text">{taskForm.planName}</p>}
-                  {/* <Select options={planOptions} className="input-field" placeholder="Select plan" /> */}
                   {/* <Select name="planName" closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} /> */}
                 </div>
 
@@ -181,7 +174,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions,
 
                 <div className="form-group">
                   <label>Owner:</label>
-                  <p className="read-only-text">{task.task_owner}</p>
+                  <p className="read-only-text">{taskForm.owner}</p>
                 </div>
 
                 <div className="form-group">
@@ -198,9 +191,9 @@ const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions,
 
               {/* Right Column - Notes */}
               <div className="right-column">
-                <div className="form-group">
+                <div className="form-group notes">
                   <label>Notes:</label>
-                  <textarea className="textarea-field" value={taskForm.updatedNotes} rows="6" readOnly></textarea>
+                  <textarea className="textarea-field" value={taskForm.updatedNotes} rows="15" readOnly></textarea>
                 </div>
 
                 <div className="form-group">
@@ -212,16 +205,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, plansInfo, task, planOptions,
 
             {/* Button Group */}
             <div className="button-group">
-              {/* <button type="submit" className="promote-button" onClick={e => handleSubmit(e, "promote")}>
-                Save and Promote
-              </button>
-              <button type="submit" className="demote-button" onClick={e => handleSubmit(e, "demote")}>
-                Save and Demote
-              </button> */}
               {renderButtons()}
-              {/* <button type="submit" className="save-button" onClick={e => handleSubmit(e)}>
-                Save Changes
-              </button> */}
               <button type="button" className="cancel-button" onClick={closeModal}>
                 Close
               </button>
