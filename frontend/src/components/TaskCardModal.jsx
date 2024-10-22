@@ -42,7 +42,6 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
 
   const renderButtons = () => {
     const stateButtons = buttonConfig[taskForm.taskState] || []
-    console.log(stateButtons)
     return stateButtons
       .filter(button => {
         const hasPermission = taskPermissions.permissionStatus?.[button.permission]

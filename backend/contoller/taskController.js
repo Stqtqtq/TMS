@@ -96,8 +96,6 @@ export const createTask = async (req, res) => {
 export const updateTask = async (req, res) => {
   const { userPermits, appPermits, taskId, planName, taskState, notes, updatedNotes, action } = req.body
   const currentUser = req.user.username
-  console.log("userPermits: ", userPermits)
-  console.log("appPermits: ", appPermits)
 
   // Get the current timestamp in the format 'YYYY-MM-DD HH:MM:SS'
   const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
@@ -141,8 +139,6 @@ export const updateTask = async (req, res) => {
       }
       state = prevState[taskState]
     }
-
-    console.log(state)
 
     const qUpdateTask = `UPDATE task SET task_plan = ?, task_notes = CONCAT(?, task_notes), task_owner = ?, task_state = ? WHERE task_id = ?`
     const [updatedTask] = await db.execute(qUpdateTask, [planName, formattedNote, currentUser, state, taskId])
