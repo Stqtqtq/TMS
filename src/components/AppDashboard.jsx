@@ -12,11 +12,7 @@ const AppDashboard = () => {
   const location = useLocation()
   const { app, currentUser } = location.state || null
 
-  if (!app) {
-    return <div>Error: No app data provided. Please go back and select an app.</div>
-  }
-
-  const [appInfoModalIsOpen, setAppInfoModalIsOpen] = useState(false)
+  // const [appInfoModalIsOpen, setAppInfoModalIsOpen] = useState(false)
   const [createTaskModalIsOpen, setCreateTaskModalIsOpen] = useState(false)
   const [plansModalIsOpen, setPlansModalIsOpen] = useState(false)
   const [taskCardModalIsOpen, setTaskCardModalIsOpen] = useState(false)
@@ -76,13 +72,13 @@ const AppDashboard = () => {
     fetchTasksInfo()
   }, [])
 
-  const openAppDetailModal = () => {
-    setAppInfoModalIsOpen(true)
-  }
+  // const openAppDetailModal = () => {
+  //   setAppInfoModalIsOpen(true)
+  // }
 
-  const closeAppDetailModal = () => {
-    setAppInfoModalIsOpen(false)
-  }
+  // const closeAppDetailModal = () => {
+  //   setAppInfoModalIsOpen(false)
+  // }
 
   const openCreateTaskModal = () => {
     setCreateTaskModalIsOpen(true)
@@ -106,12 +102,13 @@ const AppDashboard = () => {
   }
 
   const closeTaskCardModal = () => {
+    fetchTasksInfo()
     setTaskCardModalIsOpen(false)
   }
 
   return (
     <div className="kanban-container">
-      <AppInfoModal appInfo={app} isOpen={appInfoModalIsOpen} closeModal={closeAppDetailModal} />
+      {/* <AppInfoModal appInfo={app} isOpen={appInfoModalIsOpen} closeModal={closeAppDetailModal} /> */}
       <CreateTaskModal currentUser={currentUser} appInfo={app} planOptions={planOptions} fetchTasksInfo={fetchTasksInfo} isOpen={createTaskModalIsOpen} closeModal={closeCreateTaskModal} />
       <PlansModal appInfo={app} isPM={isPM} plansInfo={plansInfo} fetchPlansInfo={fetchPlansInfo} isOpen={plansModalIsOpen} closeModal={closePlansModal} />
       <TaskCardModal taskPermissions={taskPermissions} appInfo={app} task={selectedTask} planOptions={planOptions} fetchTasksInfo={fetchTasksInfo} isOpen={taskCardModalIsOpen} closeModal={closeTaskCardModal} />
@@ -119,9 +116,9 @@ const AppDashboard = () => {
       <div className="kanban-header">
         <div className="left-header-group">
           <h1 className="app-acronym">{app.app_acronym}</h1>
-          <button className="appInfo-buttons" onClick={openAppDetailModal}>
+          {/* <button className="appInfo-buttons" onClick={openAppDetailModal}>
             View App Details
-          </button>
+          </button> */}
         </div>
         <div className="right-header-group">
           <button className="appInfo-buttons" onClick={openPlansModal}>

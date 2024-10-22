@@ -1,3 +1,4 @@
+/* TaskCardModal */
 pre {
   margin: 0;
 }
@@ -12,5 +13,4 @@ pre {
 .notes-group .textarea-field {
   height: 150px; /* Adjust the height as needed */
   width: 100%;
-  resize: vertical; /* Allow the user to resize vertically */
 }

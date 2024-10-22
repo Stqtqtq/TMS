@@ -1,6 +1,6 @@
 import { db } from "../utils/db.js"
 
-const planNameRegex = /^[a-zA-Z0-9_]+$/
+const planNameRegex = /^[a-zA-Z0-9]{1,50}$/
 
 export const getPlansInfo = async (req, res) => {
   const { appAcronym } = req.body
@@ -24,7 +24,7 @@ export const createPlan = async (req, res) => {
 
   const { appAcronym, planName, planStartDate, planEndDate, colour } = req.body
 
-  if (!planName) {
+  if (!planName || !planNameRegex.test(planName)) {
     return res.status(400).json({ message: "Invalid plan name", success: false })
   } else if (!planStartDate) {
     return res.status(400).json({ message: "Invalid start date", success: false })
@@ -40,10 +40,6 @@ export const createPlan = async (req, res) => {
 
     if (existingPlan.length > 0) {
       return res.status(409).json({ message: "Plan already exists.", success: false })
-    }
-
-    if (!planNameRegex.test(planName)) {
-      return res.status(400).json({ message: "Invalid plan name. It must be alphanumeric.", success: false })
     }
 
     // Insert new plan if it does not exist.

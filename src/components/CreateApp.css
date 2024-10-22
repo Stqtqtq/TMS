@@ -1,5 +1,6 @@
+/* CreateApp */
 .createApp-container {
-  display: flex;
+  /* display: flex; */
   margin-top: 80px;
 
   table {
@@ -18,13 +19,37 @@
       height: 20px;
     }
   }
-  th:nth-child(10),
-  td:nth-child(10) {
+  th:nth-child(1),
+  td:nth-child(1) {
+    width: 250px;
+  }
+  th:nth-child(5),
+  td:nth-child(5) {
     width: 400px;
+  }
+  th:nth-child(6),
+  td:nth-child(6) {
+    width: 400px;
+  }
+  th:nth-child(7),
+  td:nth-child(7) {
+    width: 400px;
+  }
+  th:nth-child(8),
+  td:nth-child(8) {
+    width: 400px;
+  }
+  th:nth-child(9),
+  td:nth-child(9) {
+    width: 400px;
+  }
+  th:nth-child(11),
+  td:nth-child(11) {
+    width: 200px;
   }
 }
 
 textarea {
   resize: none;
-  width: 100%;
+  /* width: 100%; */
 }

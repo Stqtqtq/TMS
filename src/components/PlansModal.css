@@ -1,3 +1,4 @@
+/* PlansModal */
 .plans-container {
   display: flex;
   justify-content: center;
@@ -25,12 +26,13 @@
 
 .plansInfo-container {
   display: flex;
-  justify-content: left;
-  margin-left: 160px;
+  justify-content: space-evenly;
+  /* margin-left: 160px; */
 
   table {
     border-collapse: separate;
     border-spacing: 10px 15px;
+    width: 50%;
   }
 
   th,
@@ -42,7 +44,7 @@
 
   th:nth-child(1),
   td:nth-child(1) {
-    width: 200px;
+    width: 100px;
   }
   /* th:nth-child(2),
   td:nth-child(2) {

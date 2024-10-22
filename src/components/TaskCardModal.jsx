@@ -9,7 +9,8 @@ Modal.setAppElement("#root")
 
 const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasksInfo, isOpen, closeModal }) => {
   const [taskForm, setTaskForm] = useState({
-    permitDone: appInfo.app_permit_done,
+    userPermits: taskPermissions.permissionStatus,
+    appPermits: appInfo,
     taskId: task.task_id,
     planName: task.task_plan,
     taskState: task.task_state,
@@ -43,9 +44,23 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
     const stateButtons = buttonConfig[taskForm.taskState] || []
     console.log(stateButtons)
     return stateButtons
-      .filter(button => taskPermissions.permissionStatus?.[button.permission])
+      .filter(button => {
+        const hasPermission = taskPermissions.permissionStatus?.[button.permission]
+
+        // In the "Done" state, hide only the "promote" (Save and Approve) button if the plan has changed
+        if (taskForm.taskState === "Done" && (button.action === "promote" || button.action === null) && taskForm.planName !== task.task_plan) {
+          return false // Hide the promote button if planName changed
+        }
+
+        return hasPermission // Display all other buttons with proper permission
+      })
       .map(button => (
-        <button type="submit" className={`${button.class}-button`} onClick={e => handleSubmit(e, button.action)}>
+        <button
+          key={button.label} // Add a key to avoid React warnings
+          type="submit"
+          className={`${button.class}-button`}
+          onClick={e => handleSubmit(e, button.action)}
+        >
           {button.label}
         </button>
       ))
@@ -62,7 +77,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
   const handleSelectChange = (name, selectedOption) => {
     setTaskForm({
       ...taskForm,
-      [name]: selectedOption.value
+      [name]: selectedOption ? selectedOption.value : ""
     })
   }
 
@@ -119,7 +134,8 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
   useEffect(() => {
     if (task) {
       setTaskForm({
-        permitDone: appInfo.app_permit_done,
+        userPermits: taskPermissions.permissionStatus,
+        appPermits: appInfo,
         taskId: task.task_id,
         planName: task.task_plan || "",
         taskState: task.task_state,
@@ -131,7 +147,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
   }, [task, isOpen])
 
   // Determine if the plan field should be a Select or read-only p tag
-  const isPlanEditable = taskForm.taskState === "Open" || taskForm.taskState === "Done"
+  const isPlanEditable = (taskForm.taskState === "Open" || taskForm.taskState === "Done") && taskPermissions.permissionStatus?.app_permit_done
 
   return (
     <div id="root" className="modal-container">
@@ -158,7 +174,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
 
                 <div className="form-group">
                   <label>Plan:</label>
-                  {isPlanEditable ? <Select name="planName" closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} /> : <p className="read-only-text">{taskForm.planName}</p>}
+                  {isPlanEditable ? <Select name="planName" isClearable closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} /> : <p className="read-only-text">{taskForm.planName}</p>}
                   {/* <Select name="planName" closeMenuOnSelect={true} value={planOptions.find(option => option.value === taskForm.planName) || null} onChange={selectedOption => handleSelectChange("planName", selectedOption)} options={planOptions} /> */}
                 </div>
 
@@ -184,8 +200,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
 
                 <div className="form-group">
                   <label>Description:</label>
-                  {/* <textarea className="textarea-field" value={task.task_description} rows="4" readOnly></textarea> */}
-                  <pre>{task.task_description}</pre>
+                  <textarea className="textarea-field" value={task.task_description} rows="8" cols={50} readOnly></textarea>
                 </div>
               </div>
 
@@ -193,12 +208,12 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
               <div className="right-column">
                 <div className="form-group notes">
                   <label>Notes:</label>
-                  <textarea className="textarea-field" value={taskForm.updatedNotes} rows="15" readOnly></textarea>
+                  <textarea className="textarea-field" value={taskForm.updatedNotes} rows="16" cols={80} readOnly></textarea>
                 </div>
 
                 <div className="form-group">
                   <label>Add note:</label>
-                  <textarea className="textarea-field" name="notes" value={taskForm.notes} placeholder="Add a note" rows="6" onChange={handleChange}></textarea>
+                  <textarea className="textarea-field" name="notes" value={taskForm.notes} placeholder="Add a note" rows="8" cols={80} onChange={handleChange}></textarea>
                 </div>
               </div>
             </div>

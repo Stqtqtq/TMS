@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"
 import axios from "axios"
 import Login from "./components/Login.jsx"
 import Header from "./components/Header.jsx"
@@ -38,6 +38,15 @@ function App() {
     landingPage()
   }, [])
 
+  const ProtectedAppDashboard = () => {
+    const location = useLocation()
+    // Check if `location.state` has `app`, redirect to `/tms` if not
+    if (!location.state || !location.state.app) {
+      return <Navigate to="/tms" />
+    }
+    return <AppDashboard />
+  }
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -51,7 +60,7 @@ function App() {
         <Route path="/profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
         <Route path="/tms" element={isAuthenticated ? <TMS /> : <Navigate to="/login" />} />
         <Route path="/ums" element={isAuthenticated ? isAdmin ? <UMS /> : <Navigate to="/" /> : <Navigate to="/login" />} />
-        <Route path="/app" element={isAuthenticated ? <AppDashboard /> : <Navigate to="/login" />} />
+        <Route path="/app" element={isAuthenticated ? <ProtectedAppDashboard /> : <Navigate to="/login" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

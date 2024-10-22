@@ -100,7 +100,7 @@ const PlansModal = ({ appInfo, isPM, plansInfo, fetchPlansInfo, isOpen, closeMod
                       <th>Start Date:</th>
                       <th>End Date:</th>
                       <th>Colour:</th>
-                      {/* <th>Active</th> */}
+                      {/* <th>Create</th> */}
                     </tr>
                   </thead>
                   <tbody>
@@ -129,6 +129,16 @@ const PlansModal = ({ appInfo, isPM, plansInfo, fetchPlansInfo, isOpen, closeMod
 
           <div className="plansInfo-container">
             <table>
+              {!isPM && (
+                <thead>
+                  <tr>
+                    <th>Plan name:</th>
+                    <th>Start Date:</th>
+                    <th>End Date:</th>
+                    <th>Colour:</th>
+                  </tr>
+                </thead>
+              )}
               <tbody>
                 {plansInfo.map(plan => (
                   <tr key={plan.plan_mvp_name}>
@@ -136,7 +146,7 @@ const PlansModal = ({ appInfo, isPM, plansInfo, fetchPlansInfo, isOpen, closeMod
                     <td>{plan.plan_startdate}</td>
                     <td>{plan.plan_enddate}</td>
                     <td>
-                      <input type="color" value={plan.plan_colour} readOnly />
+                      <input type="color" value={plan.plan_colour} disabled />
                     </td>
                   </tr>
                 ))}

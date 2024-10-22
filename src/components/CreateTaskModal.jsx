@@ -130,7 +130,7 @@ const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, is
 
                 <div className="form-group">
                   <label>Description:</label>
-                  <textarea name="description" value={taskForm.description} onChange={handleChange} rows="4"></textarea>
+                  <textarea name="description" value={taskForm.description} onChange={handleChange} rows="8" cols={55} maxLength={255}></textarea>
                 </div>
               </div>
 
@@ -138,7 +138,7 @@ const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, is
               <div className="right-column">
                 <div className="form-group notes">
                   <label>Add note:</label>
-                  <textarea className="textarea-field" name="notes" value={taskForm.notes} onChange={handleChange} rows="24"></textarea>
+                  <textarea className="textarea-field" name="notes" value={taskForm.notes} onChange={handleChange} rows="26" cols={60}></textarea>
                 </div>
               </div>
             </div>

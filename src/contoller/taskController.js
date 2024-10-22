@@ -1,7 +1,7 @@
 import { db } from "../utils/db.js"
 import { transporter } from "../utils/mailer.js"
 
-const taskNameRegex = /^[a-zA-Z0-9_]+$/
+const taskNameRegex = /^[a-zA-Z0-9]{1,50}$/
 
 export const getTasksInfo = async (req, res) => {
   const { appAcronym } = req.body
@@ -25,7 +25,9 @@ export const getTasksInfo = async (req, res) => {
 export const createTask = async (req, res) => {
   // Check if current user belongs to the permit create group
 
-  const { appAcronym, taskName, planName, creator, owner, description, notes } = req.body
+  const { appAcronym, taskName, creator, owner, description, notes } = req.body
+  const planName = req.body.planName || ""
+
   const currentUser = req.user.username
   const today = new Date().toISOString().split("T")[0]
 
@@ -33,10 +35,12 @@ export const createTask = async (req, res) => {
   const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
 
   // Prepare the formatted note entry
-  const formattedNote = `[${currentUser}, ${timestamp}]\n${notes}`
+  const formattedNote = notes ? `[${currentUser}, ${timestamp}]\n${notes}` : ""
 
-  if (!taskName) {
+  if (!taskName || !taskNameRegex.test(taskName)) {
     return res.status(400).json({ message: "Invalid task name", success: false })
+  } else if (description.length > 255) {
+    return res.status(400).json({ message: "Description too long", success: false })
   }
 
   // Have to start dedicated connection to make sure all transactions run on the same connection
@@ -50,15 +54,11 @@ export const createTask = async (req, res) => {
     const [maxRNumberResult] = await connection.execute(qMaxRNumber, [appAcronym])
 
     // Check if task already exists for the app
-    const [existingTask] = await connection.execute(`SELECT * FROM task WHERE task_name = ? AND task_app_acronym = ?`, [taskName, appAcronym])
+    // const [existingTask] = await connection.execute(`SELECT * FROM task WHERE task_name = ? AND task_app_acronym = ?`, [taskName, appAcronym])
 
-    if (existingTask.length > 0) {
-      return res.status(409).json({ message: "Task already exists.", success: false })
-    }
-
-    if (!taskNameRegex.test(taskName)) {
-      return res.status(400).json({ message: "Invalid task name. It must be alphanumeric.", success: false })
-    }
+    // if (existingTask.length > 0) {
+    //   return res.status(409).json({ message: "Task already exists.", success: false })
+    // }
 
     // Get max rnumber from the application table
     let rNumber = maxRNumberResult[0].maxRNumber + 1
@@ -94,14 +94,16 @@ export const createTask = async (req, res) => {
 }
 
 export const updateTask = async (req, res) => {
-  const { permitDone, taskId, planName, taskState, notes, updatedNotes, action } = req.body
+  const { userPermits, appPermits, taskId, planName, taskState, notes, updatedNotes, action } = req.body
   const currentUser = req.user.username
+  console.log("userPermits: ", userPermits)
+  console.log("appPermits: ", appPermits)
 
   // Get the current timestamp in the format 'YYYY-MM-DD HH:MM:SS'
   const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
 
   // Prepare the formatted note entry
-  const formattedNote = `[${currentUser}, ${taskState}, ${timestamp}]\n${notes}\n\n***********\n`
+  const formattedNote = notes ? `[${currentUser}, ${taskState}, ${timestamp}]\n${notes}\n\n***********\n` : ""
 
   // Promotion and demotion logic
   const nextState = {
@@ -126,13 +128,21 @@ export const updateTask = async (req, res) => {
       if (!nextState[taskState]) {
         return res.status(400).json({ message: "Task cannot be promoted", success: false })
       }
+      if ((taskState === "Open" && !userPermits.app_permit_open) || (taskState === "Todo" && !userPermits.app_permit_todolist) || (taskState === "Doing" && !userPermits.app_permit_doing) || (taskState === "Done" && !userPermits.app_permit_done)) {
+        return res.status(403).json({ message: "You do not have permission to promote this task.", success: false })
+      }
       state = nextState[taskState]
     } else if (action === "demote") {
       if (!prevState[taskState]) {
         return res.status(400).json({ message: "Task cannot be demoted", success: false })
       }
+      if ((taskState === "Doing" && !userPermits.app_permit_doing) || (taskState === "Done" && !userPermits.app_permit_done)) {
+        return res.status(403).json({ message: "You do not have permission to promote this task.", success: false })
+      }
       state = prevState[taskState]
     }
+
+    console.log(state)
 
     const qUpdateTask = `UPDATE task SET task_plan = ?, task_notes = CONCAT(?, task_notes), task_owner = ?, task_state = ? WHERE task_id = ?`
     const [updatedTask] = await db.execute(qUpdateTask, [planName, formattedNote, currentUser, state, taskId])
@@ -146,9 +156,9 @@ export const updateTask = async (req, res) => {
     const [updatedTaskRow] = await db.execute(qGetUpdatedTask, [taskId])
 
     // Check if updating from 'Doing' -> 'Done' state. If yes, send email
-    if (state === "Doing") {
+    if (action === "promote" && state === "Done") {
       const qMailRecipients = `SELECT username FROM user_groups WHERE groupname = ?`
-      const [qMailRecipientsRow] = await db.execute(qMailRecipients, [permitDone])
+      const [qMailRecipientsRow] = await db.execute(qMailRecipients, [appPermits.app_permit_done])
 
       if (qMailRecipientsRow.length === 0) {
         return res.status(500).json({ message: "No users found", success: false })

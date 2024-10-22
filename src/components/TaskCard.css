@@ -1,10 +1,10 @@
+/* TaskCard */
 .card {
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 10px;
-  /* margin: 10px; */
-  width: 200px; /* Fixed width to keep consistent size */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for a 3D effect */
+  width: 200px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 .card:hover {
   cursor: pointer;

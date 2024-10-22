@@ -30,7 +30,7 @@ const CreateApp = ({ groupOptions, fetchAppsInfo }) => {
   const handleSelectChange = (name, selectedOption) => {
     setAppForm({
       ...appForm,
-      [name]: selectedOption.value
+      [name]: selectedOption ? selectedOption.value : ""
     })
   }
 
@@ -117,22 +117,22 @@ const CreateApp = ({ groupOptions, fetchAppsInfo }) => {
                 <input type="date" name="appEndDate" value={appForm.appEndDate} min={today} onChange={handleChange} />
               </td>
               <td>
-                <Select name="appCreate" closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appCreate) || null} onChange={selectedOption => handleSelectChange("appCreate", selectedOption)} options={groupOptions} />
+                <Select name="appCreate" isClearable closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appCreate) || null} onChange={selectedOption => handleSelectChange("appCreate", selectedOption)} options={groupOptions} />
               </td>
               <td>
-                <Select name="appOpen" closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appOpen) || null} onChange={selectedOption => handleSelectChange("appOpen", selectedOption)} options={groupOptions} />
+                <Select name="appOpen" isClearable closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appOpen) || null} onChange={selectedOption => handleSelectChange("appOpen", selectedOption)} options={groupOptions} />
               </td>
               <td>
-                <Select name="appTodo" closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appTodo) || null} onChange={selectedOption => handleSelectChange("appTodo", selectedOption)} options={groupOptions} />
+                <Select name="appTodo" isClearable closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appTodo) || null} onChange={selectedOption => handleSelectChange("appTodo", selectedOption)} options={groupOptions} />
               </td>
               <td>
-                <Select name="appDoing" closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appDoing) || null} onChange={selectedOption => handleSelectChange("appDoing", selectedOption)} options={groupOptions} />
+                <Select name="appDoing" isClearable closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appDoing) || null} onChange={selectedOption => handleSelectChange("appDoing", selectedOption)} options={groupOptions} />
               </td>
               <td>
-                <Select name="appDone" closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appDone) || null} onChange={selectedOption => handleSelectChange("appDone", selectedOption)} options={groupOptions} />
+                <Select name="appDone" isClearable closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appDone) || null} onChange={selectedOption => handleSelectChange("appDone", selectedOption)} options={groupOptions} />
               </td>
               <td>
-                <textarea name="description" value={appForm.description} onChange={handleChange} rows="5" />
+                <textarea name="description" value={appForm.description} onChange={handleChange} rows="5" cols={40} maxLength={255} />
               </td>
               <td>
                 <button>Create App</button>

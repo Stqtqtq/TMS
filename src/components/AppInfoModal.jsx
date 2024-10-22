@@ -15,53 +15,53 @@ const AppInfoModal = ({ appInfo, isOpen, closeModal }) => {
         <div className="modal-form">
           <div className="form-content">
             {/* Left Column */}
-            <div className="left-column">
-              <div className="form-group">
+            <div className="appInfo-left-column">
+              <div className="appInfo-form-group">
                 <label>App Acronym:</label>
                 <p className="read-only-text">{appInfo.app_acronym}</p>
               </div>
 
-              <div className="form-group">
+              <div className="appInfo-form-group">
                 <label>Start Date:</label>
                 <p className="read-only-text">{appInfo.app_startdate}</p>
               </div>
 
-              <div className="form-group">
+              <div className="appInfo-form-group">
                 <label>End Date:</label>
                 <p className="read-only-text">{appInfo.app_enddate}</p>
               </div>
 
               <h3 className="permissions-title">Task Permissions</h3>
 
-              <div className="form-group">
+              <div className="appInfo-form-group">
                 <label>Create:</label>
                 <p className="read-only-text">{appInfo.app_permit_create}</p>
               </div>
 
-              <div className="form-group">
+              <div className="appInfo-form-group">
                 <label>Open:</label>
                 <p className="read-only-text">{appInfo.app_permit_open}</p>
               </div>
 
-              <div className="form-group">
+              <div className="appInfo-form-group">
                 <label>ToDo:</label>
                 <p className="read-only-text">{appInfo.app_permit_todolist}</p>
               </div>
 
-              <div className="form-group">
+              <div className="appInfo-form-group">
                 <label>Doing:</label>
                 <p className="read-only-text">{appInfo.app_permit_doing}</p>
               </div>
 
-              <div className="form-group">
+              <div className="appInfo-form-group">
                 <label>Done:</label>
                 <p className="read-only-text">{appInfo.app_permit_done}</p>
               </div>
             </div>
 
             {/* Right Column - Description */}
-            <div className="right-column">
-              <div className="form-group full-width">
+            <div className="appInfo-right-column">
+              <div className="appInfo-form-group full-width">
                 <label>Description:</label>
                 <p className="read-only-text">{appInfo.app_description}</p>
               </div>

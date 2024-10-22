@@ -1,6 +1,6 @@
 import { db } from "../utils/db.js"
 
-const appAcronymRegex = /^[a-zA-Z0-9_]+$/
+const appAcronymRegex = /^[a-zA-Z0-9]{1,50}$/
 
 export const getAppsInfo = async (req, res) => {
   const currentUser = req.user.username
@@ -29,18 +29,24 @@ export const createApp = async (req, res) => {
   }
 
   const { appAcronym, appStartDate, appEndDate, appCreate, appOpen, appTodo, appDoing, appDone, description } = req.body
-  if (appAcronym === "" || null) {
+  if (!appAcronym || !appAcronymRegex.test(appAcronym)) {
     return res.status(400).json({ message: "Invalid App Acronym", success: false })
-  } else if (appCreate === "" || null) {
+  } else if (!appStartDate) {
+    return res.status(400).json({ message: "Invalid start date", success: false })
+  } else if (!appEndDate) {
+    return res.status(400).json({ message: "Invalid end date", success: false })
+  } else if (!appCreate) {
     return res.status(400).json({ message: "Task Create is not selected", success: false })
-  } else if (appOpen === "" || null) {
+  } else if (!appOpen) {
     return res.status(400).json({ message: "Task Open is not selected", success: false })
-  } else if (appTodo === "" || null) {
+  } else if (!appTodo) {
     return res.status(400).json({ message: "Task To Do is not selected", success: false })
-  } else if (appDoing === "" || null) {
+  } else if (!appDoing) {
     return res.status(400).json({ message: "Task Doing is not selected", success: false })
-  } else if (appDone === "" || null) {
+  } else if (!appDone) {
     return res.status(400).json({ message: "Task Done is not selected", success: false })
+  } else if (description.length > 255) {
+    return res.status(400).json({ message: "Description too long", success: false })
   }
 
   try {
@@ -49,10 +55,6 @@ export const createApp = async (req, res) => {
 
     if (existingApp.length > 0) {
       return res.status(409).json({ message: "App acronym already exists.", success: false })
-    }
-
-    if (!appAcronymRegex.test(appAcronym)) {
-      return res.status(400).json({ message: "Invalid App acronym. It must be alphanumeric.", success: false })
     }
 
     // Insert new App if it does not exist.

@@ -1,14 +1,12 @@
-/* Container for the entire Kanban board */
+/* AppDashBoard */
 .kanban-container {
   display: flex;
   flex-direction: column;
   padding: 20px;
-  /* background-color: #f5f5f5; */
   max-width: 100%;
   margin: 50px auto;
 }
 
-/* Header styling for App acronym and buttons */
 .kanban-header {
   display: flex;
   justify-content: space-between;
@@ -21,7 +19,6 @@
   font-weight: bold;
 }
 
-/* Button group styling */
 .right-header-group {
   display: flex;
   gap: 10px;
@@ -52,27 +49,19 @@
   background-color: #333;
   color: white;
   padding: 10px 20px;
-  /* margin-right: 30px; */
   border: none;
   cursor: pointer;
   font-size: 14px;
 }
 
-/* Kanban board layout */
 .kanban-board {
   display: flex;
   justify-content: space-between;
-  /* background-color: #e0e0e0; */
-  /* padding: 10px; */
 }
 
-/* Individual Kanban columns */
 .kanban-column {
   flex: 1;
   margin: 0 1px;
-  /* background-color: #d3d3d3; */
-  /* border: 1px solid #ccc; */
-  /* border-radius: 5px; */
   padding: 10px;
 
   /* &:nth-child(2),
@@ -90,7 +79,6 @@
 .column-title {
   font-size: 18px;
   font-weight: bold;
-  /* text-align: center; */
   margin-top: -10px;
   margin-bottom: 10px;
   text-decoration: underline;

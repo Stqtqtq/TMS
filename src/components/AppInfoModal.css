@@ -1,8 +1,8 @@
-.modal-container {
-  /* position: relative; */
+/* AppInfoModal */
+/* .modal-container {
+  position: relative;
   z-index: 2;
-}
-/* Container for the form content */
+} */
 .form-content {
   display: flex;
   justify-content: space-between;
@@ -10,24 +10,23 @@
   gap: 10px;
 }
 
-/* Left column with form fields */
-.left-column {
+.appInfo-left-column {
   display: flex;
   flex-direction: column;
   flex: 1; /* Allows more space for the left side */
+  border-right: 1px solid;
   h3 {
     margin-top: 80px;
   }
 }
 
-/* Right column for the description */
-.right-column {
+.appInfo-right-column {
   display: flex;
   flex-direction: column;
-  flex: 1; /* Description column takes less space */
+  flex: 2; /* Description column takes less space */
 }
 
-.form-group {
+.appInfo-form-group {
   display: flex;
   align-items: center;
   padding: 5px 0;
