@@ -1,6 +1,8 @@
 import { db } from "../utils/db.js"
 
 const appAcronymRegex = /^[a-zA-Z0-9]{1,50}$/
+// Regular expression to ensure no leading zeros
+const appRNumberRegex = /^(0|[1-9]\d*)$/
 
 export const getAppsInfo = async (req, res) => {
   const currentUser = req.user.username
@@ -28,23 +30,25 @@ export const createApp = async (req, res) => {
     return res.status(403).json({ message: "Forbidden", success: false, isPL: req.isPL })
   }
 
-  const { appAcronym, appStartDate, appEndDate, appCreate, appOpen, appTodo, appDoing, appDone, description } = req.body
+  const { appAcronym, appRNumber, appStartDate, appEndDate, appCreate, appOpen, appTodo, appDoing, appDone, description } = req.body
   if (!appAcronym || !appAcronymRegex.test(appAcronym)) {
     return res.status(400).json({ message: "Invalid App Acronym", success: false })
+  } else if (!appRNumber || appRNumber < 0 || !appRNumberRegex.test(appRNumber)) {
+    return res.status(400).json({ message: "Invalid Rnumber", success: false })
   } else if (!appStartDate) {
     return res.status(400).json({ message: "Invalid start date", success: false })
   } else if (!appEndDate) {
     return res.status(400).json({ message: "Invalid end date", success: false })
-  } else if (!appCreate) {
-    return res.status(400).json({ message: "Task Create is not selected", success: false })
-  } else if (!appOpen) {
-    return res.status(400).json({ message: "Task Open is not selected", success: false })
-  } else if (!appTodo) {
-    return res.status(400).json({ message: "Task To Do is not selected", success: false })
-  } else if (!appDoing) {
-    return res.status(400).json({ message: "Task Doing is not selected", success: false })
-  } else if (!appDone) {
-    return res.status(400).json({ message: "Task Done is not selected", success: false })
+    // } else if (!appCreate) {
+    //   return res.status(400).json({ message: "Task Create is not selected", success: false })
+    // } else if (!appOpen) {
+    //   return res.status(400).json({ message: "Task Open is not selected", success: false })
+    // } else if (!appTodo) {
+    //   return res.status(400).json({ message: "Task To Do is not selected", success: false })
+    // } else if (!appDoing) {
+    //   return res.status(400).json({ message: "Task Doing is not selected", success: false })
+    // } else if (!appDone) {
+    //   return res.status(400).json({ message: "Task Done is not selected", success: false })
   } else if (description.length > 255) {
     return res.status(400).json({ message: "Description too long", success: false })
   }
@@ -58,8 +62,8 @@ export const createApp = async (req, res) => {
     }
 
     // Insert new App if it does not exist.
-    const qAddApp = `INSERT INTO application (app_acronym, app_startdate, app_enddate, app_permit_create, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done, app_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    const [resultAddApp] = await db.execute(qAddApp, [appAcronym, appStartDate, appEndDate, appCreate, appOpen, appTodo, appDoing, appDone, description])
+    const qAddApp = `INSERT INTO application (app_acronym, app_rnumber, app_startdate, app_enddate, app_permit_create, app_permit_open, app_permit_todolist, app_permit_doing, app_permit_done, app_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    const [resultAddApp] = await db.execute(qAddApp, [appAcronym, appRNumber, appStartDate, appEndDate, appCreate, appOpen, appTodo, appDoing, appDone, description])
     if (resultAddApp.affectedRows === 0) {
       return res.status(500).json({ message: "App creation failed, please try again.", success: false })
     }
@@ -68,5 +72,32 @@ export const createApp = async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: "An error occurred while creating the app.", success: false })
+  }
+}
+
+export const updateApp = async (req, res) => {
+  if (!req.isPL) {
+    return res.status(403).json({ message: "Forbidden", success: false, isPL: req.isPL })
+  }
+
+  const { appAcronym, appRNumber, appStartDate, appEndDate, appCreate, appOpen, appTodo, appDoing, appDone, description } = req.body
+
+  if (description.length > 255) {
+    return res.status(400).json({ message: "Description too long", success: false })
+  }
+
+  try {
+    const qUpdateApp = `UPDATE application SET app_startdate = ?, app_enddate = ?, app_permit_create = ?, app_permit_open = ?, app_permit_todolist = ?, app_permit_doing = ?, app_permit_done = ?, app_description = ? WHERE app_acronym = ? AND app_rnumber = ?`
+
+    const [updateAppresult] = await db.execute(qUpdateApp, [appStartDate, appEndDate, appCreate, appOpen, appTodo, appDoing, appDone, description, appAcronym, appRNumber])
+
+    if (updateAppresult.affectedRows === 0) {
+      return res.status(400).json({ message: "App not found or no changes made.", success: false })
+    }
+
+    return res.status(200).json({ message: "App updated successfully.", success: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: "An error occurred while updating the app.", success: false })
   }
 }

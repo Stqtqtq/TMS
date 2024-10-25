@@ -1,6 +1,6 @@
 import { db } from "../utils/db.js"
 
-const planNameRegex = /^[a-zA-Z0-9]{1,50}$/
+const planNameRegex = /^[a-zA-Z0-9\s]{1,50}$/
 
 export const getPlansInfo = async (req, res) => {
   const { appAcronym } = req.body

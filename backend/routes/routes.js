@@ -2,7 +2,7 @@ import express from "express"
 import { login, logout, landing } from "../contoller/authController.js"
 import { getUsersInfo, createUser, update, profile, updateEmail, updatePw } from "../contoller/userController.js"
 import { createGrp } from "../contoller/groupController.js"
-import { getAppsInfo, createApp } from "../contoller/appController.js"
+import { getAppsInfo, createApp, updateApp } from "../contoller/appController.js"
 import { getPlansInfo, createPlan } from "../contoller/planController.js"
 import { getTasksInfo, createTask, updateTask } from "../contoller/taskController.js"
 import { authenticateToken, checkIsAdmin, checkUserGroup } from "../middleware/auth.js"
@@ -18,6 +18,7 @@ router.use(authenticateToken)
 router.get("/landing", checkIsAdmin, landing)
 router.get("/getAppsInfo", checkUserGroup(["PL"]), getAppsInfo)
 router.post("/createApp", checkUserGroup(["PL"]), createApp)
+router.post("/updateApp", checkUserGroup(["PL"]), updateApp)
 
 router.post("/getPlansInfo", checkUserGroup(["PM"]), getPlansInfo)
 router.post("/createPlan", checkUserGroup(["PM"]), createPlan)

@@ -35,7 +35,7 @@ export const createTask = async (req, res) => {
   const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
 
   // Prepare the formatted note entry
-  const formattedNote = notes ? `[${currentUser}, ${timestamp}]\n${notes}` : ""
+  const formattedNote = `\n**********\n[${currentUser}, ${timestamp}]\n${notes}\n\n\'Task created and is in the 'Open' state\'`
 
   if (!taskName || !taskNameRegex.test(taskName)) {
     return res.status(400).json({ message: "Invalid task name", success: false })
@@ -96,12 +96,14 @@ export const createTask = async (req, res) => {
 export const updateTask = async (req, res) => {
   const { userPermits, appPermits, taskId, planName, taskState, notes, updatedNotes, action } = req.body
   const currentUser = req.user.username
+  console.log(userPermits)
+  console.log(appPermits)
 
   // Get the current timestamp in the format 'YYYY-MM-DD HH:MM:SS'
   const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
 
   // Prepare the formatted note entry
-  const formattedNote = notes ? `[${currentUser}, ${taskState}, ${timestamp}]\n${notes}\n\n***********\n` : ""
+  const formattedNote = notes ? `\n***********\n[${currentUser}, ${taskState}, ${timestamp}]\n${notes}\n` : ""
 
   // Promotion and demotion logic
   const nextState = {
@@ -122,6 +124,16 @@ export const updateTask = async (req, res) => {
   let state = taskState
 
   try {
+    // Fetch the current state of the task
+    const qGetCurrentTask = `SELECT task_state FROM task WHERE task_id = ?`
+    const [currentTaskRow] = await db.execute(qGetCurrentTask, [taskId])
+
+    if (currentTaskRow.length === 0) {
+      return res.status(404).json({ message: "Task not found", success: false })
+    }
+
+    const currentTaskState = currentTaskRow[0].task_state
+
     if (action === "promote") {
       if (!nextState[taskState]) {
         return res.status(400).json({ message: "Task cannot be promoted", success: false })
@@ -140,8 +152,17 @@ export const updateTask = async (req, res) => {
       state = prevState[taskState]
     }
 
+    // Check if the state has changed
+    let stateChangedNote = ""
+    if (state !== currentTaskState) {
+      stateChangedNote = `\n***********\n[${currentUser}, State Changed, ${timestamp}]\nState changed from '${currentTaskState}' to '${state}'\n`
+    }
+
+    // Combine new notes with state change note (if any)
+    const combinedNotes = stateChangedNote + formattedNote
+
     const qUpdateTask = `UPDATE task SET task_plan = ?, task_notes = CONCAT(?, task_notes), task_owner = ?, task_state = ? WHERE task_id = ?`
-    const [updatedTask] = await db.execute(qUpdateTask, [planName, formattedNote, currentUser, state, taskId])
+    const [updatedTask] = await db.execute(qUpdateTask, [planName, combinedNotes, currentUser, state, taskId])
 
     if (updatedTask.affectedRows === 0) {
       return res.status(500).json({ message: "Task not found", success: false })

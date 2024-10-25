@@ -29,7 +29,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
       { action: null, class: "save", label: "Save Changes", permission: "app_permit_todolist" }
     ],
     Doing: [
-      { action: "promote", class: "promote", label: "Save and Seek Approval", permission: "app_permit_doing" },
+      { action: "promote", class: "promote", label: "Save and Seek Review", permission: "app_permit_doing" },
       { action: "demote", class: "demote", label: "Save and Giveup", permission: "app_permit_doing" },
       { action: null, class: "save", label: "Save Changes", permission: "app_permit_doing" }
     ],
@@ -146,8 +146,23 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
   }, [task, isOpen])
 
   // Determine if the plan field should be a Select or read-only p tag
-  const isPlanEditable = (taskForm.taskState === "Open" || taskForm.taskState === "Done") && taskPermissions.permissionStatus?.app_permit_done
-
+  const isPlanEditable = (taskForm.taskState === "Open" && taskPermissions.permissionStatus?.app_permit_open) || (taskForm.taskState === "Done" && taskPermissions.permissionStatus?.app_permit_done)
+  // Determine if the "Add Note" textarea should be enabled
+  const isNoteEditable = (() => {
+    switch (taskForm.taskState) {
+      case "Open":
+        return taskForm.userPermits?.app_permit_open
+      case "Todo":
+        return taskForm.userPermits?.app_permit_todolist
+      case "Doing":
+        return taskForm.userPermits?.app_permit_doing
+      case "Done":
+        return taskForm.userPermits?.app_permit_done
+      default:
+        return false
+    }
+  })()
+  // const isNoteEditable = (taskForm.taskState )
   return (
     <div id="root" className="modal-container">
       <Modal isOpen={isOpen} contentLabel="Example Modal">
@@ -199,7 +214,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
 
                 <div className="form-group">
                   <label>Description:</label>
-                  <textarea className="textarea-field" value={task.task_description} rows="8" cols={50} readOnly></textarea>
+                  <textarea className="textarea-field" value={task.task_description} rows="8" cols={50} disabled></textarea>
                 </div>
               </div>
 
@@ -207,12 +222,12 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
               <div className="right-column">
                 <div className="form-group notes">
                   <label>Notes:</label>
-                  <textarea className="textarea-field" value={taskForm.updatedNotes} rows="16" cols={80} readOnly></textarea>
+                  <textarea className="textarea-field" value={taskForm.updatedNotes} rows="16" cols={80} disabled></textarea>
                 </div>
 
                 <div className="form-group">
                   <label>Add note:</label>
-                  <textarea className="textarea-field" name="notes" value={taskForm.notes} placeholder="Add a note" rows="8" cols={80} onChange={handleChange}></textarea>
+                  <textarea className="textarea-field" name="notes" value={taskForm.notes} placeholder="Add a note" rows="8" cols={80} onChange={handleChange} disabled={!isNoteEditable}></textarea>
                 </div>
               </div>
             </div>

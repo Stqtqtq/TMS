@@ -5,12 +5,13 @@ import Select from "react-select"
 import "./CreateApp.css"
 
 const CreateApp = ({ groupOptions, fetchAppsInfo }) => {
-  const today = new Date().toISOString().split("T")[0]
+  // const today = new Date().toISOString().split("T")[0]
 
   const [appForm, setAppForm] = useState({
     appAcronym: "",
-    appStartDate: today,
-    appEndDate: today,
+    appRNumber: "",
+    appStartDate: "",
+    appEndDate: "",
     appCreate: "",
     appOpen: "",
     appTodo: "",
@@ -51,8 +52,9 @@ const CreateApp = ({ groupOptions, fetchAppsInfo }) => {
 
       setAppForm({
         appAcronym: "",
-        appStartDate: today,
-        appEndDate: today,
+        appRNumber: "",
+        appStartDate: "",
+        appEndDate: "",
         appCreate: null,
         appOpen: null,
         appTodo: null,
@@ -109,12 +111,14 @@ const CreateApp = ({ groupOptions, fetchAppsInfo }) => {
               <td>
                 <input type="text" name="appAcronym" value={appForm.appAcronym} onChange={handleChange} />
               </td>
-              <td></td>
               <td>
-                <input type="date" name="appStartDate" value={appForm.appStartDate} min={today} onChange={handleChange} />
+                <input type="text" name="appRNumber" value={appForm.appRNumber} onChange={handleChange} />
               </td>
               <td>
-                <input type="date" name="appEndDate" value={appForm.appEndDate} min={today} onChange={handleChange} />
+                <input type="date" name="appStartDate" value={appForm.appStartDate} onChange={handleChange} />
+              </td>
+              <td>
+                <input type="date" name="appEndDate" value={appForm.appEndDate} onChange={handleChange} />
               </td>
               <td>
                 <Select name="appCreate" isClearable closeMenuOnSelect={true} value={groupOptions.find(option => option.value === appForm.appCreate) || null} onChange={selectedOption => handleSelectChange("appCreate", selectedOption)} options={groupOptions} />

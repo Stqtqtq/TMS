@@ -66,7 +66,7 @@ const TMS = () => {
           </table>
         </div>
       )}
-      <AppsTable appsInfo={appsInfo} handleOpenApp={handleOpenApp} />
+      <AppsTable appsInfo={appsInfo} setAppsInfo={setAppsInfo} groupOptions={groupOptions} fetchAppsInfo={fetchAppsInfo} handleOpenApp={handleOpenApp} />
     </div>
   )
 }
