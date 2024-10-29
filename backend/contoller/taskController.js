@@ -23,7 +23,7 @@ export const getTasksInfo = async (req, res) => {
   }
 }
 
-// export const createTask = async (req, res) =>
+// export const oreateTask = async (req, res) =>
 //   // Check if current user belongs to the permit create group
 
 //   const { appAcronym, taskName, creator, owner, description, notes } = req.body
@@ -348,6 +348,7 @@ export const CreateTask = async (req, res) => {
     const [acronymRow] = await db.execute(checkAcronym, [appAcronym])
 
     if (acronymRow.length === 0) {
+      console.log("fail at retrieving app")
       return res.json({ code: "D001" })
     }
   } catch (err) {

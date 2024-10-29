@@ -1,0 +1,26 @@
+test_case,username,password,task_app_acronym,task_name,task_description,task_notes,task_plan,expected_code
+iam__username_missing,,admin!23,test,iam__username_missing,iam__username_missing,iam__username_missing,plan 3,C001
+iam_pw_missing,used in promotetask2done,,test,iam_pw_missing,iam_pw_missing,iam_pw_missing,plan 3,C001
+iam_username_wrong_type,12345,admin!23,test,iam_username_wrong_type,iam_username_wrong_type,iam_username_wrong_type,plan 3,C001
+iam_pw_wrong_type,PL,12345,test,iam_pw_wrong_type,iam_pw_wrong_type,iam_pw_wrong_type,plan 3,C001
+iam_username_too_long,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",admin!23,test,iam_username_too_long,iam_username_too_long,iam_username_too_long,plan 3,C001
+iam_pw_too_long,PL,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",test,iam_pw_too_long,iam_pw_too_long,iam_pw_too_long,plan 3,C001
+iam_invalid_credentials,PL,wrongpassword,test,iam_invalid_credentials,iam_invalid_credentials,iam_invalid_credentials,plan 3,C001
+iam_unauthorised_user,Dev,admin!23,test,iam_unauthorised_user,iam_unauthorised_user,iam_unauthorised_user,plan 3,C003
+txn_acronym_wrong_type,PL,admin!23,12345,txn_acronym_wrong_type,txn_acronym_wrong_type,txn_acronym_wrong_type,plan 3,D001
+txn_taskname_wrong_type,PL,admin!23,test,12345,txn_taskname_wrong_type,txn_taskname_wrong_type,plan 3,D001
+txn_description_wrong_type,PL,admin!23,test,txn_description_wrong_type,12345,txn_description_wrong_type,plan 3,D001
+txn_notes_wrong_type,PL,admin!23,test,txn_notes_wrong_type,txn_notes_wrong_type,12345,plan 3,D001
+txn_plan_wrong_type,PL,admin!23,test,txn_plan_wrong_type,txn_plan_wrong_type,txn_plan_wrong_type,12345,D001
+txn_acronym_too_long,PL,admin!23,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",txn_acronym_too_long,txn_acronym_too_long,txn_acronym_too_long,plan 3,D001
+txn_taskname_too_long,PL,admin!23,test,txn_taskname_too_long,txn_taskname_too_long,txn_taskname_too_long,plan 3,D001
+txn_description_too_long,PL,admin!23,test,txn_description_too_long,txn_description_too_long,txn_description_too_long,plan 3,D001
+txn_plan_too_long,PL,admin!23,test,txn_plan_too_long,txn_plan_too_long,txn_plan_too_long,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",D001
+txn_acronym_missing,PL,admin!23,,txn_acronym_missing,txn_acronym_missing,txn_acronym_missing,plan 3,D001
+txn_taskname_missing,PL,admin!23,test,,txn_taskname_missing,txn_taskname_missing,plan 3,D001
+txn_acronym_DNE,PL,admin!23,this should not exist,txn_acronym_DNE,txn_acronym_DNE,txn_acronym_DNE,plan 3,D001
+txn_taskname_invalid,Dev,admin!23,test,txn_taskname_invalid,txn_taskname_invalid,txn_taskname_invalid,plan 3,D001
+txn_description_missing,PL,admin!23,test,txn_description_missing,,txn_description_missing,plan 3,S000
+txn_notes_missing,PL,admin!23,test,txn_notes_missing,txn_notes_missing,,plan 3,S000
+txn_plans_missing,PL,admin!23,test,txn_plans_missing,txn_plans_missing,txn_plans_missing,,S000
+pass_createtask,PL,admin!23,test,pass_createtask,pass_createtask,pass_createtask,plan 3,S000

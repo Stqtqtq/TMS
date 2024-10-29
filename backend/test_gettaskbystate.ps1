@@ -1,9 +1,3 @@
-#insert valid user, state,acronym here (that has actual tasks)
-$username = "testdev"
-$password = "abc123!!"
-$state = 'doing'
-$acronym = "zoo" #insert valid acronym here
-
 
 Write-Output    "Any points listed are errors"
 try {
