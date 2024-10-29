@@ -1,14 +1,17 @@
 #insert valid params here
-$plusername = "PL"
-$plpassword = "admin!23"
-$devusername = 'Dev'
-$devpassword = "admin!23"
+$plusername = "testpl"
+$plpassword = "abc123!!"
 $acronym = "test"
 $name = "testAPI"
 $notes = 'checking for API from test script'
 $plan = 'plan 3'
 
+# Get the current script directory
+$scriptDir = Split-Path -Path $MyInvocation.MyCommand.Path
+$csvPath = Join-Path -Path $scriptDir -ChildPath "test - createtask.csv"
 
+# Read in the CSV file as an array of objects
+$testCases = Import-Csv -Path $csvPath
 
 
 Write-Output    "Any points listed are errors"
@@ -110,13 +113,6 @@ try {
     exit 1
 }
 
-# Get the current script directory
-$scriptDir = Split-Path -Path $MyInvocation.MyCommand.Path
-$csvPath = Join-Path -Path $scriptDir -ChildPath "test_createtask.csv"
-
-# Read in the CSV file as an array of objects
-$testCases = Import-Csv -Path $csvPath
-
 Write-Output "Running test cases from CSV"
 
 foreach ($testCase in $testCases) {
@@ -155,7 +151,7 @@ foreach ($testCase in $testCases) {
 
     # Send the request
     try {
-        $response = Invoke-RestMethod -Method 'Post' -Uri "http://localhost:3000/createtask" -ContentType "application/json" -Body $jsonBody
+        $response = Invoke-RestMethod -Method 'Post' -Uri "http://localhost:3000/createtask" -ContentType "application/json" -Body $Body
         if ($response -is [string]) { $response = $response | ConvertFrom-Json }
         
         # Check the response code against the expected code
