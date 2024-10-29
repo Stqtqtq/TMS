@@ -17,7 +17,7 @@ function UsersTable({ userData, setUserData, groupOptions, fetchUserData }) {
   const handleSave = async updatedPost => {
     try {
       const response = await axios.put(
-        `http://localhost:5000/update`,
+        `http://localhost:3000/update`,
         {
           username: updatedPost.username,
           password: updatedPost.password || "",

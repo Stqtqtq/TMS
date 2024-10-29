@@ -7,7 +7,7 @@ const Header = ({ isAdmin, username, setIsAdmin }) => {
   const handleLogout = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/logout",
+        "http://localhost:3000/logout",
         {},
         {
           headers: { "Content-Type": "application/json" },

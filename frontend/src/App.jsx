@@ -18,7 +18,7 @@ function App() {
   useEffect(() => {
     const landingPage = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/landing", {
+        const response = await axios.get("http://localhost:3000/landing", {
           headers: { "Content-Type": "application/json" },
           withCredentials: true
         })

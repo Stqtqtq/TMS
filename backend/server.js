@@ -6,7 +6,7 @@ import routes from "./routes/routes.js"
 
 // dotenv.config()
 
-const port = 5000
+const port = 3000
 const app = express()
 
 const corsOptions = {

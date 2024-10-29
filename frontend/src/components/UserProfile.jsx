@@ -12,7 +12,7 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/profile`, {
+        const response = await axios.get(`http://localhost:3000/profile`, {
           headers: { "Content-Type": "application/json" },
           withCredentials: true
         })
@@ -29,7 +29,7 @@ const UserProfile = () => {
     e.preventDefault()
     try {
       const response = await axios.put(
-        `http://localhost:5000/updateEmail`,
+        `http://localhost:3000/updateEmail`,
         { email: newEmail },
         {
           headers: { "Content-Type": "application/json" },
@@ -66,7 +66,7 @@ const UserProfile = () => {
     e.preventDefault()
     try {
       const response = await axios.put(
-        `http://localhost:5000/updatePw`,
+        `http://localhost:3000/updatePw`,
         { password: newPassword },
         {
           headers: { "Content-Type": "application/json" },

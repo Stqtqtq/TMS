@@ -4,10 +4,15 @@ import { getUsersInfo, createUser, update, profile, updateEmail, updatePw } from
 import { createGrp } from "../contoller/groupController.js"
 import { getAppsInfo, createApp, updateApp } from "../contoller/appController.js"
 import { getPlansInfo, createPlan } from "../contoller/planController.js"
-import { getTasksInfo, createTask, updateTask } from "../contoller/taskController.js"
+import { getTasksInfo, updateTask, CreateTask, GetTaskbyState, PromoteTask2Done } from "../contoller/taskController.js"
 import { authenticateToken, checkIsAdmin, checkUserGroup } from "../middleware/auth.js"
 
 const router = express.Router()
+
+// APIs
+router.post("/CreateTask", CreateTask)
+router.post("/GetTaskbyState", GetTaskbyState)
+router.post("/PromoteTask2Done", PromoteTask2Done)
 
 router.post("/login", login)
 router.post("/logout", logout)
@@ -24,7 +29,7 @@ router.post("/getPlansInfo", checkUserGroup(["PM"]), getPlansInfo)
 router.post("/createPlan", checkUserGroup(["PM"]), createPlan)
 
 router.post("/getTasksInfo", getTasksInfo)
-router.post("/createTask", createTask)
+// router.post("/createTask", createTask)
 router.put("/updateTask", updateTask)
 
 router.get("/getUsersInfo", checkIsAdmin, getUsersInfo)

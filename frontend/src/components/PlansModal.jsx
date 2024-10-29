@@ -30,7 +30,7 @@ const PlansModal = ({ appInfo, isPM, plansInfo, fetchPlansInfo, isOpen, closeMod
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/createPlan",
+        "http://localhost:3000/createPlan",
         {
           ...planForm
         },

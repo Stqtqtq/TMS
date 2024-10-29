@@ -14,7 +14,7 @@ const UMS = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/getUsersInfo", {
+      const response = await axios.get("http://localhost:3000/getUsersInfo", {
         headers: { "Content-Type": "application/json" },
         withCredentials: true
       })

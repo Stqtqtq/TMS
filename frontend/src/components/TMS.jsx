@@ -15,7 +15,7 @@ const TMS = () => {
 
   const fetchAppsInfo = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/getAppsInfo", {
+      const response = await axios.get("http://localhost:3000/getAppsInfo", {
         headers: { "Content-Type": "application/json" },
         withCredentials: true
       })

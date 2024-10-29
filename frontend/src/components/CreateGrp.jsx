@@ -12,7 +12,7 @@ const CreateGrp = ({ addGroup }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/createGrp",
+        "http://localhost:3000/createGrp",
         {
           groupname: grpName
         },

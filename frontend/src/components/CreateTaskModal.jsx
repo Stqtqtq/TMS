@@ -38,7 +38,7 @@ const CreateTaskModal = ({ currentUser, appInfo, planOptions, fetchTasksInfo, is
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/createTask",
+        "http://localhost:3000/createTask",
         {
           ...taskForm
         },

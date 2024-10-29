@@ -26,7 +26,7 @@ const AppDashboard = () => {
   const fetchPlansInfo = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/getPlansInfo",
+        "http://localhost:3000/getPlansInfo",
         {
           appAcronym: app.app_acronym
         },
@@ -51,7 +51,7 @@ const AppDashboard = () => {
   const fetchTasksInfo = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/getTasksInfo",
+        "http://localhost:3000/getTasksInfo",
         {
           appAcronym: app.app_acronym
         },

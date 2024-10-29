@@ -17,7 +17,7 @@ const CreateUser = ({ groupOptions, fetchUserData }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/createUser",
+        "http://localhost:3000/createUser",
         {
           username,
           password,

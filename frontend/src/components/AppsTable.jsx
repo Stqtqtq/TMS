@@ -14,7 +14,7 @@ const AppsTable = ({ appsInfo, setAppsInfo, groupOptions, fetchAppsInfo, handleO
   const handleSave = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/updateApp`,
+        `http://localhost:3000/updateApp`,
         {
           appAcronym: editApp.app_acronym,
           appRNumber: editApp.app_rnumber,

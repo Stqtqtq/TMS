@@ -85,7 +85,7 @@ const TaskCardModal = ({ taskPermissions, appInfo, task, planOptions, fetchTasks
 
     try {
       const response = await axios.put(
-        "http://localhost:5000/updateTask",
+        "http://localhost:3000/updateTask",
         {
           ...taskForm,
           action
