@@ -1,0 +1,18 @@
+test_case,username,password,task_state,task_app_acronym,expected_code
+iam_username_wrong_type,12345,admin!23,doing,zoo,C001
+iam_pw_wrong_type,PL1,12345,doing,zoo,C001
+iam_usename_too_long,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",admin!23,doing,zoo,C001
+iam_pw_too_long,PL1,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",doing,zoo,C001
+iam_invalid_credentials,PL1,wrongpassword,doing,zoo,C001
+txn_missing_task_state,PL1,admin!23,,zoo,D001
+txn_missing_acronym,PL1,admin!23,doing,,D001
+txn_state_DNE,PL1,admin!23,dne,zoo,D001
+txn_acronym_DNE,PL1,admin!23,doing,this should not exist,D001
+txn_state_too_long,PL1,admin!23,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",zoo,D001
+txn_acronym_too_long,PL1,admin!23,doing,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",D001
+txn_state_wrong_type,PL1,admin!23,12345,zoo,D001
+txn_acronym_wrong_type,PL1,admin!23,doing,12345,D001
+txn_capitalised_state,PL1,admin!23,OPEN,zoo,S000
+txn_lowercase_state,PL1,admin!23,open,zoo,S000
+txn_camelcase_state,PL1,admin!23,Open,zoo,S000
+pass_gettaskbystate,PL1,admin!23,doing,zoo,S000
