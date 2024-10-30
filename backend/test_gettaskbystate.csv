@@ -1,5 +1,8 @@
 test_case,username,password,task_state,task_app_acronym,expected_code
 iam_username_wrong_type,12345,admin!23,doing,zoo,C001
+iam_username_undefined,,admin!23,doing,zoo,C001
+iam_username_empty,"",admin!23,doing,zoo,C001
+iam_username_null,null,admin!23,doing,zoo,C001
 iam_pw_wrong_type,PL1,12345,doing,zoo,C001
 iam_usename_too_long,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",admin!23,doing,zoo,C001
 iam_pw_too_long,PL1,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",doing,zoo,C001

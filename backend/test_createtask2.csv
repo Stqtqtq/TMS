@@ -1,6 +1,8 @@
 test_case,username,password,task_app_acronym,task_name,task_description,task_notes,task_plan,expected_code
-iam__username_missing,,admin!23,test,iam  username missing,iam__username_missing,iam__username_missing,plan 3,C001
-iam_pw_missing,used in promotetask2done,,test,iam pw missing,iam_pw_missing,iam_pw_missing,plan 3,C001
+iam_username_missing,,admin!23,test,iam username missing,iam_username_missing,iam_username_missing,plan 3,C001
+iam_username_empty_string,"",admin!23,test,iam username empty string,iam_username_empty_string,iam_username_empty_string,plan 3,C001
+iam_pw_missing,PL,,test,iam pw missing,iam_pw_missing,iam_pw_missing,plan 3,C001
+iam_pw_empty_string,PL,"",test,iam pw empty string,iam_pw_empty_string,iam_pw_empty_string,plan 3,C001
 iam_username_wrong_type,12345,admin!23,test,iam username wrong type,iam_username_wrong_type,iam_username_wrong_type,plan 3,C001
 iam_pw_wrong_type,PL,12345,test,iam pw wrong type,iam_pw_wrong_type,iam_pw_wrong_type,plan 3,C001
 iam_username_too_long,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",admin!23,test,iam username too long,iam_username_too_long,iam_username_too_long,plan 3,C001
@@ -17,11 +19,16 @@ txn_taskname_too_long,PL,admin!23,test,Lorem ipsum dolor sit amet nconsectetuer 
 txn_description_too_long,PL,admin!23,test,txn description too long,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,.",txn_description_too_long,plan 3,D001
 txn_plan_too_long,PL,admin!23,test,txn plan too long,txn_plan_too_long,txn_plan_too_long,"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ae",D001
 txn_acronym_missing,PL,admin!23,,txn acronym missing,txn_acronym_missing,txn_acronym_missing,plan 3,D001
+txn_acronym_empty_string,PL,admin!23,"",txn acronym empty string,txn_acronym_empty_string,txn_acronym_empty_string,plan 3,D001
 txn_not_existing_plan,PL,admin!23,test,txn not existing plan,txn_not_existing_plan,txn_not_existing_plan,Not an existing plan,D001
 txn_taskname_missing,PL,admin!23,test,,txn_taskname_missing,txn_taskname_missing,plan 3,D001
+txn_taskname_empty_string,PL,admin!23,test,"",txn_taskname_empty_string,txn_taskname_empty_string,plan 3,D001
 txn_acronym_DNE,PL,admin!23,this should not exist,txn acronym DNE,txn_acronym_DNE,txn_acronym_DNE,plan 3,D001
 txn_taskname_invalid,PL,admin!23,test,invalid!,txn_taskname_invalid,txn_taskname_invalid,plan 3,D001
 txn_description_missing,PL,admin!23,test,txn description missing,,txn_description_missing,plan 3,S000
+txn_description_empty_string,PL,admin!23,test,txn description empty string,"",txn_description_empty_string,plan 3,S000
 txn_notes_missing,PL,admin!23,test,txn notes missing,txn_notes_missing,,plan 3,S000
+txn_notes_empty_string,PL,admin!23,test,txn notes empty string,txn_notes_empty_string,"",plan 3,S000
 txn_plans_missing,PL,admin!23,test,txn plans missing,txn_plans_missing,txn_plans_missing,,S000
+txn_plans_empty_string,PL,admin!23,test,txn plans empty string,txn_plans_empty_string,txn_plans_empty_string,"",S000
 pass_createtask,PL,admin!23,test,pass createtask,pass_createtask,pass_createtask,plan 3,S000
