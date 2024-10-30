@@ -1,10 +1,10 @@
 import express from "express"
-import { login, logout, landing } from "../contoller/authController.js"
-import { getUsersInfo, createUser, update, profile, updateEmail, updatePw } from "../contoller/userController.js"
-import { createGrp } from "../contoller/groupController.js"
-import { getAppsInfo, createApp, updateApp } from "../contoller/appController.js"
-import { getPlansInfo, createPlan } from "../contoller/planController.js"
-import { getTasksInfo, updateTask, CreateTask, GetTaskbyState, PromoteTask2Done } from "../contoller/taskController.js"
+import { login, logout, landing } from "../controller/authController.js"
+import { getUsersInfo, createUser, update, profile, updateEmail, updatePw } from "../controller/userController.js"
+import { createGrp } from "../controller/groupController.js"
+import { getAppsInfo, createApp, updateApp } from "../controller/appController.js"
+import { getPlansInfo, createPlan } from "../controller/planController.js"
+import { getTasksInfo, updateTask, CreateTask, GetTaskbyState, PromoteTask2Done } from "../controller/taskController.js"
 import { authenticateToken, checkIsAdmin, checkUserGroup } from "../middleware/auth.js"
 
 const router = express.Router()

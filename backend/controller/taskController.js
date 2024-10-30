@@ -292,23 +292,9 @@ export const CreateTask = async (req, res) => {
   // Prepare the formatted note entry
   const formattedNote = `\n**********\n[${username}, ${timestamp}]\n${notes}\n\n'Task created and is in the "Open" state'`
 
-  // Validate mandatory parameters and check for invalid input lengths
-  if (!appAcronym || !taskName) {
-    return res.json({ code: "D001" })
-  }
-
-  if (appAcronym.length > 50 || !taskNameRegex.test(taskName) || taskName.length > 50 || description.length > 255 || planName.length > 50) {
-    return res.json({ code: "D001" })
-  }
-
-  if (typeof appAcronym !== "string" || typeof taskName !== "string" || typeof description !== "string" || typeof notes !== "string" || typeof planName !== "string") {
-    return res.json({ code: "D001" })
-  }
-
   if (!username || !password || typeof username !== "string" || typeof password !== "string") {
     return res.json({ code: "C001" })
   }
-
   // Authenticate the user
   try {
     const [userRows] = await db.execute("SELECT password, isActive FROM accounts WHERE username = ?", [username])
@@ -326,6 +312,10 @@ export const CreateTask = async (req, res) => {
     return res.json({ code: "E004" })
   }
 
+  if (!appAcronym || appAcronym.length > 50 || typeof appAcronym !== "string") {
+    return res.json({ code: "D001" })
+  }
+
   // Check if the user has permission to create a task
   try {
     // Retrieve the app_permit_create group for the specified app
@@ -339,17 +329,26 @@ export const CreateTask = async (req, res) => {
 
     // Check if the user is part of the required permission group
     const [userGroupRows] = await db.execute("SELECT * FROM user_groups WHERE username = ? AND groupname = ?", [username, permitGroup])
-
     if (userGroupRows.length === 0) {
       return res.json({ code: "C003" })
     }
 
-    const checkAcronym = `SELECT * FROM task WHERE task_app_acronym = ?`
-    const [acronymRow] = await db.execute(checkAcronym, [appAcronym])
-
-    if (acronymRow.length === 0) {
-      console.log("fail at retrieving app")
+    if (!taskName || !taskNameRegex.test(taskName) || typeof taskName !== "string") {
       return res.json({ code: "D001" })
+    }
+
+    if (description.length > 255 || typeof description !== "string" || typeof notes !== "string" || typeof planName !== "string" || planName.length > 50) {
+      return res.json({ code: "D001" })
+    }
+
+    if (planName) {
+      // Check if there is an existing plan in the app
+      const checkPlan = `SELECT * FROM  plan WHERE plan_mvp_name = ? AND plan_app_acronym = ?`
+      const [planRow] = await db.execute(checkPlan, [planName, appAcronym])
+
+      if (planRow.length === 0) {
+        return res.json({ code: "D001" })
+      }
     }
   } catch (err) {
     console.error("Permission check error:", err)
@@ -435,23 +434,9 @@ export const GetTaskbyState = async (req, res) => {
   const { username, password, task_app_acronym: app_acronym } = req.body
   let { task_state } = req.body
 
-  if (!username || !password || !app_acronym || !task_state) {
-    return res.json({ code: "D001" })
+  if (!username || !password) {
+    return res.json({ code: "C001" })
   }
-
-  if (typeof app_acronym !== "string" || typeof task_state !== "string" || app_acronym.length > 50 || task_state.length > 10) {
-    return res.json({ code: "D001" })
-  }
-
-  // Convert 'closed' to 'close' for consistency and ensure case-insensitive matching
-  task_state = task_state.toLowerCase() === "closed" ? "close" : task_state.toLowerCase()
-
-  if (!allowedStates.has(task_state)) {
-    return res.json({ code: "D001" })
-  }
-
-  // Capitalize the first letter of task_state to match database values
-  task_state = task_state.charAt(0).toUpperCase() + task_state.slice(1)
 
   if (typeof username !== "string" || typeof password !== "string") {
     return res.json({ code: "C001" })
@@ -472,6 +457,20 @@ export const GetTaskbyState = async (req, res) => {
     console.error("Database query error:", err)
     return res.json({ code: "E004" })
   }
+
+  if (!app_acronym || !task_state || typeof app_acronym !== "string" || typeof task_state !== "string" || app_acronym.length > 50 || task_state.length > 10) {
+    return res.json({ code: "D001" })
+  }
+
+  // Convert 'closed' to 'close' for consistency and ensure case-insensitive matching
+  task_state = task_state.toLowerCase() === "closed" ? "close" : task_state.toLowerCase()
+
+  if (!allowedStates.has(task_state)) {
+    return res.json({ code: "D001" })
+  }
+
+  // Capitalize the first letter of task_state to match database values
+  task_state = task_state.charAt(0).toUpperCase() + task_state.slice(1)
 
   try {
     // Step 1: Fetch tasks based on app_acronym(if exist) and task_state
@@ -549,10 +548,6 @@ export const PromoteTask2Done = async (req, res) => {
   }
   const { username, password, task_id, task_notes } = req.body
 
-  if (!task_id || typeof task_id !== "string" || task_id.length > 100) {
-    return res.json({ code: "D001" })
-  }
-
   if (!username || !password || typeof username !== "string" || typeof password !== "string") {
     return res.json({ code: "C001" })
   }
@@ -574,27 +569,31 @@ export const PromoteTask2Done = async (req, res) => {
     return res.json({ code: "E004" })
   }
 
-  // Check if the user has permission to promote task in "doing" state to "done" state
-  try {
-    // Retrieve the app_permit_create group for the specified app
-    const [appRows] = await db.execute("SELECT app_permit_create FROM application WHERE app_acronym = ?", [appAcronym])
-
-    if (appRows.length === 0) {
-      return res.json({ code: "D001" })
-    }
-
-    const permitGroup = appRows[0].app_permit_doing
-
-    // Check if the user is part of the required permission group
-    const [userGroupRows] = await db.execute("SELECT * FROM user_groups WHERE username = ? AND groupname = ?", [username, permitGroup])
-
-    if (userGroupRows.length === 0) {
-      return res.json({ code: "C003" })
-    }
-  } catch (err) {
-    console.error("Permission check error:", err)
-    return res.json({ code: "E004" })
+  if (!task_id || typeof task_id !== "string" || task_id.length > 100) {
+    return res.json({ code: "D001" })
   }
+
+  // // Check if the user has permission to promote task in "doing" state to "done" state
+  // try {
+  //   // Retrieve the app_permit_create group for the specified app
+  //   const [appRows] = await db.execute("SELECT app_permit_create FROM application WHERE app_acronym = ?", [appAcronym])
+
+  //   if (appRows.length === 0) {
+  //     return res.json({ code: "D001" })
+  //   }
+
+  //   const permitGroup = appRows[0].app_permit_doing
+
+  //   // Check if the user is part of the required permission group
+  //   const [userGroupRows] = await db.execute("SELECT * FROM user_groups WHERE username = ? AND groupname = ?", [username, permitGroup])
+
+  //   if (userGroupRows.length === 0) {
+  //     return res.json({ code: "C003" })
+  //   }
+  // } catch (err) {
+  //   console.error("Permission check error:", err)
+  //   return res.json({ code: "E004" })
+  // }
 
   try {
     // Step 1: Check if task exists and is in the "Doing" state
@@ -612,7 +611,17 @@ export const PromoteTask2Done = async (req, res) => {
       return res.json({ code: "D001" })
     }
 
-    // Step 2: Update the task to "Done" state and append task notes
+    // Step 2: Fetch the permission group for app_permit_done based on app_acronym
+    const qGetPermissionGroup = `SELECT app_permit_done FROM application WHERE app_acronym = ?`
+    const [appPermissions] = await db.execute(qGetPermissionGroup, [app_acronym])
+
+    if (appPermissions.length === 0 || !appPermissions[0].app_permit_done) {
+      return res.json({ code: "C003" })
+    }
+
+    const donePermissionGroup = appPermissions[0].app_permit_done
+
+    // Step 3: Update the task to "Done" state and append task notes
     const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
     const formattedNote = task_notes ? `\n**********\n[${username}, ${timestamp}]\n${task_notes}\nState changed from 'Doing' to 'Done'\n` : `\n**********\n[${username}, ${timestamp}]\nState changed from 'Doing' to 'Done'\n`
 
@@ -622,16 +631,6 @@ export const PromoteTask2Done = async (req, res) => {
     if (updatedTask.affectedRows === 0) {
       return res.json({ code: "E004" })
     }
-
-    // Step 3: Fetch the permission group for app_permit_done based on app_acronym
-    const qGetPermissionGroup = `SELECT app_permit_done FROM application WHERE app_acronym = ?`
-    const [appPermissions] = await db.execute(qGetPermissionGroup, [app_acronym])
-
-    if (appPermissions.length === 0 || !appPermissions[0].app_permit_done) {
-      return res.json({ code: "E004", message: "No permissions set for this app's 'Done' group" })
-    }
-
-    const donePermissionGroup = appPermissions[0].app_permit_done
 
     // Step 4: Get emails of users in the done permission group
     const qMailRecipients = `SELECT email FROM accounts WHERE username IN (SELECT username FROM user_groups WHERE groupname = ?)`
