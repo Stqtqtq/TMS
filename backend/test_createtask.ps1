@@ -1,6 +1,25 @@
+# Helper function to process each CSV value and convert numeric strings to integers where needed
+function Convert-CSVValueToPowerShell {
+    param (
+        [string]$value
+    )
+    
+    if ($value -eq "null") {
+        return $null  # Convert string "null" to PowerShell $null
+    } elseif ($value -eq "") {
+        return ""  # Empty string remains as an empty string
+    } elseif (-not $value) {
+        return $null  # Treat undefined (missing in CSV) as $null in PowerShell
+    } elseif ($value -match '^\d+$') {
+        return [int]$value  # Convert numeric strings to integers
+    } else {
+        return $value  # Return as is for other values
+    }
+}
+
 #insert valid params here
-$plusername = "testpl"
-$plpassword = "abc123!!"
+$plusername = "PL"
+$plpassword = "admin!23"
 $acronym = "test"
 $name = "testAPI"
 $notes = 'checking for API from test script'
@@ -8,7 +27,7 @@ $plan = 'plan 3'
 
 # Get the current script directory
 $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Path
-$csvPath = Join-Path -Path $scriptDir -ChildPath "test - createtask.csv"
+$csvPath = Join-Path -Path $scriptDir -ChildPath "test_createtask2.csv"
 
 # Read in the CSV file as an array of objects
 $testCases = Import-Csv -Path $csvPath
@@ -86,7 +105,7 @@ try {
         task_app_acronym = $acronym
         task_name        = "no optional keys"
     } | ConvertTo-Json
-    $response = Invoke-RestMethod -Method 'Post' -Uri "http://localhost:3000/createtask" -ContentType "application/json" -Body $Body
+    $response = Invoke-RestMethod -Method 'Post' -Uri "http://localhost:3000/createtask" -ContentType "application/json" -Body $body
     if ($response -is [string]) { $response = $response | ConvertFrom-Json }
     if ($response.code -ne "S000") {
         Write-Output "- no optional keys, code is $($response.code) but expected is S000"
@@ -117,25 +136,25 @@ Write-Output "Running test cases from CSV"
 
 foreach ($testCase in $testCases) {
     # Extract data from each row
-    $username = $testCase.username
-    $password = $testCase.password
-    $taskState = $testCase.task_state
-    $taskAppAcronym = $testCase.task_app_acronym
-    $taskName = $testCase.task_name
-    $taskDescription = $testCase.task_description
-    $taskNotes = $testCase.task_notes
-    $taskPlan = $testCase.task_plan
-    $expectedCode = $testCase.expected_code
+    $username = Convert-CSVValueToPowerShell $testCase.username
+    $password = Convert-CSVValueToPowerShell $testCase.password
+    $taskState = Convert-CSVValueToPowerShell $testCase.task_state
+    $taskAppAcronym = Convert-CSVValueToPowerShell $testCase.task_app_acronym
+    $taskName = Convert-CSVValueToPowerShell $testCase.task_name
+    $taskDescription = Convert-CSVValueToPowerShell $testCase.task_description
+    $taskNotes = Convert-CSVValueToPowerShell $testCase.task_notes
+    $taskPlan = Convert-CSVValueToPowerShell $testCase.task_plan
+    $expectedCode = Convert-CSVValueToPowerShell $testCase.expected_code
 
-    # Convert numeric fields to integers where required
-    if ($username -match '^\d+$') { $username = [int]$username }
-    if ($password -match '^\d+$') { $password = [int]$password }
-    if ($taskState -match '^\d+$') { $taskState = [int]$taskState }
-    if ($taskAppAcronym -match '^\d+$') { $taskAppAcronym = [int]$taskAppAcronym }
-    if ($taskName -match '^\d+$') { $taskName = [int]$taskName }
-    if ($taskDescription -match '^\d+$') { $taskDescription = [int]$taskDescription }
-    if ($taskNotes -match '^\d+$') { $taskNotes = [int]$taskNotes }
-    if ($taskPlan -match '^\d+$') { $taskPlan = [int]$taskPlan }
+    # # Convert numeric fields to integers where required
+    # if ($username -match '^\d+$') { $username = [int]$username }
+    # if ($password -match '^\d+$') { $password = [int]$password }
+    # if ($taskState -match '^\d+$') { $taskState = [int]$taskState }
+    # if ($taskAppAcronym -match '^\d+$') { $taskAppAcronym = [int]$taskAppAcronym }
+    # if ($taskName -match '^\d+$') { $taskName = [int]$taskName }
+    # if ($taskDescription -match '^\d+$') { $taskDescription = [int]$taskDescription }
+    # if ($taskNotes -match '^\d+$') { $taskNotes = [int]$taskNotes }
+    # if ($taskPlan -match '^\d+$') { $taskPlan = [int]$taskPlan }
 
     # Construct the body for the Invoke-RestMethod call based on the extracted data
     $body = @{
@@ -151,7 +170,7 @@ foreach ($testCase in $testCases) {
 
     # Send the request
     try {
-        $response = Invoke-RestMethod -Method 'Post' -Uri "http://localhost:3000/createtask" -ContentType "application/json" -Body $Body
+        $response = Invoke-RestMethod -Method 'Post' -Uri "http://localhost:3000/createtask" -ContentType "application/json" -Body $body
         if ($response -is [string]) { $response = $response | ConvertFrom-Json }
         
         # Check the response code against the expected code

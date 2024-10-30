@@ -1,3 +1,21 @@
+# Helper function to process each CSV value and convert numeric strings to integers where needed
+function Convert-CSVValueToPowerShell {
+    param (
+        [string]$value
+    )
+    
+    if ($value -eq "null") {
+        return $null  # Convert string "null" to PowerShell $null
+    } elseif ($value -eq "") {
+        return ""  # Empty string remains as an empty string
+    } elseif (-not $value) {
+        return $null  # Treat undefined (missing in CSV) as $null in PowerShell
+    } elseif ($value -match '^\d+$') {
+        return [int]$value  # Convert numeric strings to integers
+    } else {
+        return $value  # Return as is for other values
+    }
+}
 
 Write-Output    "Any points listed are errors"
 try {
@@ -85,7 +103,7 @@ try {
 
 # Get the current script directory
 $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Path
-$csvPath = Join-Path -Path $scriptDir -ChildPath "test_gettaskbystate.csv"
+$csvPath = Join-Path -Path $scriptDir -ChildPath "test_gettaskbystate2.csv"
 
 # Read in the CSV file as an array of objects
 $testCases = Import-Csv -Path $csvPath
@@ -94,17 +112,17 @@ Write-Output "Running test cases from CSV"
 
 foreach ($testCase in $testCases) {
     # Extract data from each row
-    $username = $testCase.username
-    $password = $testCase.password
-    $taskState = $testCase.task_state
-    $taskAppAcronym = $testCase.task_app_acronym
-    $expectedCode = $testCase.expected_code
+    $username = Convert-CSVValueToPowerShell $testCase.username
+    $password = Convert-CSVValueToPowerShell $testCase.password
+    $taskState = Convert-CSVValueToPowerShell $testCase.task_state
+    $taskAppAcronym = Convert-CSVValueToPowerShell $testCase.task_app_acronym
+    $expectedCode = Convert-CSVValueToPowerShell $testCase.expected_code
 
     # Convert numeric fields to integers where required
-    if ($username -match '^\d+$') { $username = [int]$username }
-    if ($password -match '^\d+$') { $password = [int]$password }
-    if ($taskState -match '^\d+$') { $taskState = [int]$taskState }
-    if ($taskAppAcronym -match '^\d+$') { $taskAppAcronym = [int]$taskAppAcronym }
+    # if ($username -match '^\d+$') { $username = [int]$username }
+    # if ($password -match '^\d+$') { $password = [int]$password }
+    # if ($taskState -match '^\d+$') { $taskState = [int]$taskState }
+    # if ($taskAppAcronym -match '^\d+$') { $taskAppAcronym = [int]$taskAppAcronym }
 
     # Construct the body for the Invoke-RestMethod call based on the extracted data
     $body = @{
@@ -121,9 +139,9 @@ foreach ($testCase in $testCases) {
         
         # Check the response code against the expected code
         if ($response.code -ne $expectedCode) {
-            Write-Host "- Test case $($testCase.test_case) failed: expected $expectedCode, got $($response.code)" -ForegroundColor Red
+            Write-Host "- Test case: $($testCase.test_case) failed: expected $expectedCode, got $($response.code)" -ForegroundColor Red
         } else {
-            Write-Host "- Test case $($testCase.test_case) passed" -ForegroundColor Green
+            Write-Host "- Test case: $($testCase.test_case) passed" -ForegroundColor Green
         }
     }
     catch {
