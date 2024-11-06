@@ -20,6 +20,10 @@ app.use(cookieParser())
 
 app.use(routes)
 
+// app.use((req, res) => {
+//   res.json({ code: "A001" })
+// })
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`)
 })

@@ -5,6 +5,9 @@ export const authenticateToken = async (req, res, next) => {
   const token = req.cookies.token
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" })
+
+    // Below is the correct return if integrating API with dedicated error code
+    // return res.json({ code: "C001" })
   }
 
   try {

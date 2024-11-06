@@ -23,76 +23,76 @@ export const getTasksInfo = async (req, res) => {
   }
 }
 
-// export const oreateTask = async (req, res) =>
-//   // Check if current user belongs to the permit create group
+export const taskCreation = async (req, res) => {
+  const { appAcronym, taskName, creator, owner, description, notes } = req.body
+  const planName = req.body.planName || ""
 
-//   const { appAcronym, taskName, creator, owner, description, notes } = req.body
-//   const planName = req.body.planName || ""
+  const currentUser = req.user.username
+  const today = new Date().toISOString().split("T")[0]
 
-//   const currentUser = req.user.username
-//   const today = new Date().toISOString().split("T")[0]
+  // Get the current timestamp in the format 'YYYY-MM-DD HH:MM:SS'
+  const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
 
-//   // Get the current timestamp in the format 'YYYY-MM-DD HH:MM:SS'
-//   const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
+  // Prepare the formatted note entry
+  const formattedNote = `\n**********\n[${currentUser}, ${timestamp}]\n${notes}\n\n\'Task created and is in the 'Open' state\'`
 
-//   // Prepare the formatted note entry
-//   const formattedNote = `\n**********\n[${currentUser}, ${timestamp}]\n${notes}\n\n\'Task created and is in the 'Open' state\'`
+  if (!taskName || !taskNameRegex.test(taskName)) {
+    return res.status(400).json({ message: "Invalid task name", success: false })
+  } else if (description.length > 255) {
+    return res.status(400).json({ message: "Description too long", success: false })
+  }
 
-//   if (!taskName || !taskNameRegex.test(taskName)) {
-//     return res.status(400).json({ message: "Invalid task name", success: false })
-//   } else if (description.length > 255) {
-//     return res.status(400).json({ message: "Description too long", success: false })
-//   }
+  // Check if current user belongs to the permit create group
 
-//   // Have to start dedicated connection to make sure all transactions run on the same connection
-//   let connection
+  // Have to start dedicated connection to make sure all transactions run on the same connection
+  let connection
 
-//   try {
-//     connection = await db.getConnection()
-//     await connection.beginTransaction()
+  try {
+    connection = await db.getConnection()
+    await connection.beginTransaction()
 
-//     const qMaxRNumber = `SELECT MAX(app_rnumber) AS maxRNumber FROM application WHERE app_acronym = ?`
-//     const [maxRNumberResult] = await connection.execute(qMaxRNumber, [appAcronym])
+    const qMaxRNumber = `SELECT MAX(app_rnumber) AS maxRNumber FROM application WHERE app_acronym = ?`
+    const [maxRNumberResult] = await connection.execute(qMaxRNumber, [appAcronym])
 
-//     // Check if task already exists for the app
-//     // const [existingTask] = await connection.execute(`SELECT * FROM task WHERE task_name = ? AND task_app_acronym = ?`, [taskName, appAcronym])
+    // Check if task already exists for the app
+    // const [existingTask] = await connection.execute(`SELECT * FROM task WHERE task_name = ? AND task_app_acronym = ?`, [taskName, appAcronym])
 
-//     // if (existingTask.length > 0) {
-//     //   return res.status(409).json({ message: "Task already exists.", success: false })
-//     // }
+    // if (existingTask.length > 0) {
+    //   return res.status(409).json({ message: "Task already exists.", success: false })
+    // }
 
-//     // Get max rnumber from the application table
-//     let rNumber = maxRNumberResult[0].maxRNumber + 1
-//     const taskId = `${appAcronym}_${rNumber}`
+    // Get max rnumber from the application table
+    let rNumber = maxRNumberResult[0].maxRNumber + 1
+    const taskId = `${appAcronym}_${rNumber}`
 
-//     // Insert new task if it does not exist.
-//     const qAddTask = `INSERT INTO task (task_id, task_name, task_description, task_notes, task_plan, task_app_acronym, task_state, task_creator, task_owner, task_createdate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-//     const [resultAddTask] = await connection.execute(qAddTask, [taskId, taskName, description, formattedNote, planName, appAcronym, "Open", creator, owner, today])
-//     if (resultAddTask.affectedRows === 0) {
-//       // return res.status(500).json({ message: "Task creation failed, please try again.", success: false })
-//       throw new Error("Task creation failed")
-//     }
+    // Insert new task if it does not exist.
+    const qAddTask = `INSERT INTO task (task_id, task_name, task_description, task_notes, task_plan, task_app_acronym, task_state, task_creator, task_owner, task_createdate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    const [resultAddTask] = await connection.execute(qAddTask, [taskId, taskName, description, formattedNote, planName, appAcronym, "Open", creator, owner, today])
+    if (resultAddTask.affectedRows === 0) {
+      // return res.status(500).json({ message: "Task creation failed, please try again.", success: false })
+      throw new Error("Task creation failed")
+    }
 
-//     // Update the app with latest highest rnumber
-//     const qUpdateAppRNumber = `UPDATE application SET app_rnumber = ? WHERE app_acronym = ?`
-//     const [updatedAppRNumber] = await connection.execute(qUpdateAppRNumber, [rNumber, appAcronym])
+    // Update the app with latest highest rnumber
+    const qUpdateAppRNumber = `UPDATE application SET app_rnumber = ? WHERE app_acronym = ?`
+    const [updatedAppRNumber] = await connection.execute(qUpdateAppRNumber, [rNumber, appAcronym])
 
-//     if (updatedAppRNumber.affectedRows === 0) {
-//       // return res.status(500).json({ message: "Update to application rnumber failed, please try again.", success: false })
-//       throw new Error("Failed to update application rnumber")
-//     }
+    if (updatedAppRNumber.affectedRows === 0) {
+      // return res.status(500).json({ message: "Update to application rnumber failed, please try again.", success: false })
+      throw new Error("Failed to update application rnumber")
+    }
 
-//     await connection.commit()
+    await connection.commit()
 
-//     return res.status(201).json({ message: "Task created successfully.", result: resultAddTask, success: true })
-//   } catch (err) {
-//     if (connection) await connection.rollback()
-//     console.error(err)
-//     res.status(500).json({ message: "An error occurred while creating the task.", success: false })
-//   } finally {
-//     if (connection) connection.release()
-//   }
-// }
+    return res.status(201).json({ message: "Task created successfully.", result: resultAddTask, success: true })
+  } catch (err) {
+    if (connection) await connection.rollback()
+    console.error(err)
+    res.status(500).json({ message: "An error occurred while creating the task.", success: false })
+  } finally {
+    if (connection) connection.release()
+  }
+}
 
 export const updateTask = async (req, res) => {
   const { userPermits, appPermits, taskId, planName, taskState, notes, updatedNotes, action } = req.body
@@ -503,9 +503,9 @@ export const GetTaskbyState = async (req, res) => {
     })
 
     // Step 5: Map each task with its respective color from the colorMap
-    const tasksWithColour = tasks.map(task => ({
-      ...task,
-      task_plan_colour: colorMap[task.task_plan]
+    const tasksWithColour = tasks.map(({ task_plan, ...rest }) => ({
+      ...rest,
+      task_plan_colour: colorMap[task_plan] || ""
     }))
 
     // Return the formatted response with tasks and success code
@@ -611,6 +611,21 @@ export const PromoteTask2Done = async (req, res) => {
       return res.json({ code: "D001" })
     }
 
+    const [appRows] = await db.execute("SELECT app_permit_doing FROM application WHERE app_acronym = ?", [app_acronym])
+
+    if (appRows.length === 0) {
+      return res.json({ code: "D001" })
+    }
+
+    const permitGroup = appRows[0].app_permit_doing
+
+    // Check if the user is part of the required permission group
+    const [userGroupRows] = await db.execute("SELECT * FROM user_groups WHERE username = ? AND groupname = ?", [username, permitGroup])
+
+    if (userGroupRows.length === 0) {
+      return res.json({ code: "C003" })
+    }
+
     // Step 2: Fetch the permission group for app_permit_done based on app_acronym
     const qGetPermissionGroup = `SELECT app_permit_done FROM application WHERE app_acronym = ?`
     const [appPermissions] = await db.execute(qGetPermissionGroup, [app_acronym])
@@ -625,8 +640,8 @@ export const PromoteTask2Done = async (req, res) => {
     const timestamp = new Date().toISOString().slice(0, 19).replace("T", " ")
     const formattedNote = task_notes ? `\n**********\n[${username}, ${timestamp}]\n${task_notes}\nState changed from 'Doing' to 'Done'\n` : `\n**********\n[${username}, ${timestamp}]\nState changed from 'Doing' to 'Done'\n`
 
-    const qUpdateTask = `UPDATE task SET task_state = ?, task_notes = CONCAT(?, task_notes) WHERE task_id = ?`
-    const [updatedTask] = await db.execute(qUpdateTask, ["Done", formattedNote, task_id])
+    const qUpdateTask = `UPDATE task SET task_state = ?, task_notes = CONCAT(?, task_notes), task_owner = ? WHERE task_id = ?`
+    const [updatedTask] = await db.execute(qUpdateTask, ["Done", formattedNote, username, task_id])
 
     if (updatedTask.affectedRows === 0) {
       return res.json({ code: "E004" })

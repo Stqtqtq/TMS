@@ -4,15 +4,22 @@ import { getUsersInfo, createUser, update, profile, updateEmail, updatePw } from
 import { createGrp } from "../controller/groupController.js"
 import { getAppsInfo, createApp, updateApp } from "../controller/appController.js"
 import { getPlansInfo, createPlan } from "../controller/planController.js"
-import { getTasksInfo, updateTask, CreateTask, GetTaskbyState, PromoteTask2Done } from "../controller/taskController.js"
+import { getTasksInfo, updateTask, taskCreation, CreateTask, GetTaskbyState, PromoteTask2Done } from "../controller/taskController.js"
 import { authenticateToken, checkIsAdmin, checkUserGroup } from "../middleware/auth.js"
 
 const router = express.Router()
 
+/*
+Middleware can intercept and modify responses, therefore,
+if API returning error codes not defined for APIs, look at middleware
+return responses and make necessary changes.
+*/
+
 // APIs
 router.post("/CreateTask", CreateTask)
 router.post("/GetTaskbyState", GetTaskbyState)
-router.post("/PromoteTask2Done", PromoteTask2Done)
+router.patch("/PromoteTask2Done", PromoteTask2Done)
+//
 
 router.post("/login", login)
 router.post("/logout", logout)
@@ -29,7 +36,7 @@ router.post("/getPlansInfo", checkUserGroup(["PM"]), getPlansInfo)
 router.post("/createPlan", checkUserGroup(["PM"]), createPlan)
 
 router.post("/getTasksInfo", getTasksInfo)
-// router.post("/createTask", createTask)
+router.post("/taskCreation", taskCreation)
 router.put("/updateTask", updateTask)
 
 router.get("/getUsersInfo", checkIsAdmin, getUsersInfo)
@@ -40,5 +47,9 @@ router.put("/update", checkIsAdmin, update)
 router.get("/profile", profile)
 router.put("/updateEmail", updateEmail)
 router.put("/updatePw", updatePw)
+
+router.use((req, res) => {
+  res.json({ code: "A001" })
+})
 
 export default router
