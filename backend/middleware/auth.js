@@ -3,11 +3,12 @@ import { db } from "../utils/db.js"
 
 export const authenticateToken = async (req, res, next) => {
   const token = req.cookies.token
+  // *This check here will interfere with api error return msgs
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" })
 
     // Below is the correct return if integrating API with dedicated error code
-    // return res.json({ code: "C001" })
+    // return res.json({ code: "A001" })
   }
 
   try {

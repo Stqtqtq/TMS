@@ -4,8 +4,13 @@ import { getUsersInfo, createUser, update, profile, updateEmail, updatePw } from
 import { createGrp } from "../controller/groupController.js"
 import { getAppsInfo, createApp, updateApp } from "../controller/appController.js"
 import { getPlansInfo, createPlan } from "../controller/planController.js"
-import { getTasksInfo, updateTask, taskCreation, CreateTask, GetTaskbyState, PromoteTask2Done } from "../controller/taskController.js"
+import { getTasksInfo, updateTask, taskCreation } from "../controller/taskController.js"
 import { authenticateToken, checkIsAdmin, checkUserGroup } from "../middleware/auth.js"
+
+// For Docker
+// import { CreateTask } from "../controller/createTaskController.js"
+// import { GetTaskbyState } from "../controller/getTaskbyStateController.js"
+// import { PromoteTask2Done } from "../controller/promoteTask2DoneController.js"
 
 const router = express.Router()
 
@@ -16,9 +21,9 @@ return responses and make necessary changes.
 */
 
 // APIs
-router.post("/CreateTask", CreateTask)
-router.post("/GetTaskbyState", GetTaskbyState)
-router.patch("/PromoteTask2Done", PromoteTask2Done)
+// router.post("/CreateTask", CreateTask)
+// router.post("/GetTaskbyState", GetTaskbyState)
+// router.patch("/PromoteTask2Done", PromoteTask2Done)
 //
 
 router.post("/login", login)
@@ -48,8 +53,8 @@ router.get("/profile", profile)
 router.put("/updateEmail", updateEmail)
 router.put("/updatePw", updatePw)
 
-router.use((req, res) => {
-  res.json({ code: "A001" })
-})
+// router.use((req, res) => {
+//   res.json({ code: "A001" })
+// })
 
 export default router
