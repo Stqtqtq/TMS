@@ -30,6 +30,10 @@ Dockerfile
 .dockerignore
 
 controller/*
-!controller/taskController.js
-middleware/*
-test/*
+!controller/api.js
+# !controller/createTaskController.js
+# !controller/getTaskbyStateController.js
+# !controller/promoteTask2DoneController.js
+
+middleware
+test
