@@ -1,13 +1,14 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import dotenv from "dotenv"
 
-import routes from "./routes/routes.js"
+// import routes from "./routes/routes.js"
 import api_routes from "./routes/api_routes.js"
 
-// dotenv.config()
+dotenv.config()
 
-const port = 3000
+const port = process.env.PORT
 const app = express()
 
 const corsOptions = {
@@ -29,7 +30,7 @@ app.use('/api', api_routes)
 
 */
 app.use(api_routes)
-app.use(routes)
+// app.use(routes)
 
 app.use((req, res) => {
   res.json({ code: "A001" })
