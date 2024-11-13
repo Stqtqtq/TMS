@@ -28,12 +28,18 @@ frontend
 
 Dockerfile
 .dockerignore
+package*.json
 
 controller/*
 !controller/api.js
 # !controller/createTaskController.js
 # !controller/getTaskbyStateController.js
 # !controller/promoteTask2DoneController.js
+
+routes/routes.js
+
+transport_files/*
+!transport_files/3api_pack.tgz
 
 middleware
 test
