@@ -23,6 +23,7 @@ export const getTasksInfo = async (req, res) => {
   }
 }
 
+// TODO: Check if current user belongs to the permit create group
 export const taskCreation = async (req, res) => {
   const { appAcronym, taskName, creator, owner, description, notes } = req.body
   const planName = req.body.planName || ""
@@ -41,8 +42,6 @@ export const taskCreation = async (req, res) => {
   } else if (description.length > 255) {
     return res.status(400).json({ message: "Description too long", success: false })
   }
-
-  // Check if current user belongs to the permit create group
 
   // Have to start dedicated connection to make sure all transactions run on the same connection
   let connection
@@ -94,6 +93,7 @@ export const taskCreation = async (req, res) => {
   }
 }
 
+// TODO: Check if current user belongs to the respective state's permit group
 export const updateTask = async (req, res) => {
   const { userPermits, appPermits, taskId, planName, taskState, notes, updatedNotes, action } = req.body
   const currentUser = req.user.username
